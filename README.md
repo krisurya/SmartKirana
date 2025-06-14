@@ -16,3 +16,7 @@ Solution: Delete package-lock.json file and node module folder.
 
 
 
+## For Backend Python Based Application
+.\venv\Scripts\Activate.ps1
+uvicorn main:app --reload
+

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { UnitMappingService } from './services/unit-mapping.service';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +10,9 @@ import { RouterOutlet } from '@angular/router';
 })
 export class AppComponent {
   title = 'smartkirana';
+  constructor(private unitMappingService: UnitMappingService) {}
+
+  async ngOnInit() {
+    await this.unitMappingService.loadMappings();
+  }
 }

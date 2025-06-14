@@ -1,0 +1,12 @@
+{
+  "units": [
+        { "aliases": ["kg", "kilo", "किलो", "किलोग्राम"], "normalized": "kg" },
+        { "aliases": ["gram", "grams", "ग्राम"], "normalized": "g" },
+        { "aliases": ["litre", "litres", "लीटर"], "normalized": "l" },
+        { "aliases": ["पैकेट", "packet", "packets"], "normalized": "packet" },
+        { "aliases": ["dozen", "डजन", "दर्जन"], "normalized": "dozen" },
+        { "aliases": ["piece", "pieces", "पीस"], "normalized": "piece" },
+        { "aliases": ["box", "बॉक्स"], "normalized": "box" },
+        { "aliases": ["बोरी", "bag", "bags"], "normalized": "bag" }
+    ]
+}

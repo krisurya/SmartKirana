@@ -1,0 +1,21 @@
+<div class="voice-container">
+  <h2>🎙️ Voice Order</h2>
+  <button (click)="startListening()" [disabled]="isListening">Start Listening</button>
+  <button (click)="stopListening()" [disabled]="!isListening">Stop</button>
+
+  <div *ngIf="recognizedText">
+    <h3>Recognized:</h3>
+    <p>{{ recognizedText }}</p>
+  </div>
+
+  <div *ngIf="items.length > 0">
+    <h3>Parsed Items:</h3>
+    <ul>
+      <li *ngFor="let item of items">
+        {{ item.quantity }} {{ item.unit }} {{ item.name }}
+      </li>
+    </ul>
+
+    <button (click)="submitOrder()">Submit Order</button>
+  </div>
+</div>
