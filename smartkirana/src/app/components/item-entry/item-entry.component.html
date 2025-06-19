@@ -12,9 +12,9 @@
             <th class="col-id">ItemID</th>
             <th class="col-hindi">Hindi Name</th>
             <th class="col-english">English Name</th>
+            <th class="col-aliases">Aliases</th>
             <th class="col-price">Price</th>
             <th class="col-unit">Unit</th>
-            <th class="col-aliases">Aliases</th>
             <th class="col-created">CreatedAt</th>
             <th class="col-updated">UpdatedAt</th>
             <th class="col-action">Action</th>
@@ -24,8 +24,18 @@
     <ng-template pTemplate="body" let-row let-i="rowIndex">
         <tr>
         <td class="col-id">{{ row.get('itemId')?.value }}</td>
-        <td class="col-hindi"><input pInputText [formControl]="row.get('itemHindi')" /></td>
+        <td class="col-hindi"><input pInputText [formControl]="row.get('itemHindi')" lang="hi" placeholder="यहाँ हिंदी में टाइप करें" /></td>
         <td class="col-english"><input pInputText [formControl]="row.get('itemEnglish')" /></td>
+        <td class="col-aliases">
+            <p-multiSelect
+            [options]="allAliases"
+            [formControl]="row.get('aliases')"
+            [maxSelectedLabels]="7"
+            display="chip"
+            appendTo="body"
+            scrollHeight="200px"
+            ></p-multiSelect>
+        </td>
         <td class="col-price"><input type="number" pInputText [formControl]="row.get('price')" /></td>
         <td class="col-unit">
             <p-dropdown
@@ -37,16 +47,6 @@
             scrollHeight="200px"
             ></p-dropdown>
         </td>
-        <td class="col-aliases">
-            <p-multiSelect
-            [options]="allAliases"
-            [formControl]="row.get('aliases')"
-            [maxSelectedLabels]="7"
-            display="chip"
-            appendTo="body"
-            scrollHeight="200px"
-            ></p-multiSelect>
-        </td>
         <td class="col-created">{{ row.get('createdAt')?.value?.toDate?.() | date:'short' }}</td>
         <td class="col-updated">{{ row.get('updatedAt')?.value?.toDate?.() | date:'short' }}</td>
         <td class="col-action">
@@ -57,5 +57,5 @@
     </p-table>
 
     <button pButton label="+ Add Row" icon="pi pi-plus" class="mb-2" (click)="addNewBlankRow()"></button>
-    <button pButton label="Save All" icon="pi pi-save" class="mt-2" (click)="saveAll()" [disabled]="formArray.invalid"></button>    
+    <button pButton label="Save All" icon="pi pi-save" class="mt-2" (click)="saveAll()" [disabled]="!canSaveAll"></button>    
 </div>
