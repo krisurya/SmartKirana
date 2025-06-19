@@ -17,6 +17,7 @@ import { UnitMappingService } from './services/unit-mapping.service';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { ItemEntryComponent } from './components/item-entry/item-entry.component';
+import { UnitEntryComponent } from './components/unit-entry/unit-entry.component';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -34,18 +35,27 @@ export const appConfig: ApplicationConfig = {
     SpeechService,
     VoiceOrderComponent,
     ItemEntryComponent,
+    UnitEntryComponent,
     FirestoreService,
     UnitMappingService,
 
     // ✅ Optional: if you use routing
     provideRouter([
       {
+        path: '',
+        loadComponent: () => import('./components/unit-entry/unit-entry.component').then(m => m.UnitEntryComponent)
+      },
+      {
         path: 'voice-order',
         loadComponent: () => import('./components/voice-order/voice-order.component').then(m => m.VoiceOrderComponent)
       },
       {
-        path: '',
+        path: 'item-entry',
         loadComponent: () => import('./components/item-entry/item-entry.component').then(m => m.ItemEntryComponent)
+      },
+      {
+        path: 'unit-entry',
+        loadComponent: () => import('./components/unit-entry/unit-entry.component').then(m => m.UnitEntryComponent)
       }
     ]),
   ],

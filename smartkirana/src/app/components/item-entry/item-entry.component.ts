@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,7 +13,9 @@ import {
   doc,
   query,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  where,
+  DocumentData
 } from '@angular/fire/firestore';
 
 import { firstValueFrom } from 'rxjs';
@@ -22,6 +24,7 @@ import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 
@@ -36,6 +39,7 @@ import { FormsModule } from '@angular/forms';
     InputTextModule,
     DropdownModule,
     MultiSelectModule,
+    AutoCompleteModule ,
     ButtonModule
   ],
   templateUrl: './item-entry.component.html',
@@ -48,16 +52,13 @@ export class ItemEntryComponent implements OnInit {
   formArray = this.fb.array<FormGroup>([]);
   loading = signal(false);
 
-  unitOptions = [
-    { label: 'Kilogram', value: 'Kilogram' },
-    { label: 'Litre', value: 'Litre' },
-    { label: 'Piece', value: 'Piece' }
-  ];
-
+  unitOptions: { id:any, label: any; value: any; }[] = [];
   allAliases = ['दाल','अरहर','तोवर','मूंग','मूंग दाल','मूँग दाल','हरी दाल','हरी मूंग','मूंगी दाल','साबुत मूंग','छिलकी मूंग','दूध','पानी'];
+  filteredAliases: string[] = [];
 
   async ngOnInit() {
     this.loading.set(true);
+    await this.loadUnits();
     await this.loadItems();
     this.addNewBlankRow();
     this.loading.set(false);
@@ -70,7 +71,7 @@ export class ItemEntryComponent implements OnInit {
       itemHindi:   [item?.canonical || '', Validators.required],
       itemEnglish: [item?.english || '', Validators.required],
       price:       [item?.price || 0, [Validators.required, Validators.min(1)]],
-      unitType:    [item?.unitType || '', Validators.required],
+      unitType:    [item?.unitType || [], Validators.required],
       aliases:     [item?.aliases || [], Validators.required],
       createdAt:   [item?.createdAt || null],
       updatedAt:   [item?.updatedAt || null],
@@ -78,6 +79,40 @@ export class ItemEntryComponent implements OnInit {
     });
   }
 
+  private async loadUnits() {
+    const colRef = collection(this.db, 'units');
+    const q = query(
+      colRef,
+      where('deletedAt', '==', null),
+      orderBy('updatedAt', 'desc')
+    );
+
+    const units$ = collectionData(q, { idField: 'id' });
+    const units = await firstValueFrom(units$);
+    this.unitOptions = this.getAllPossibleUnits(units);
+  }
+
+  getAllPossibleUnits(units: (DocumentData | (DocumentData & { id: string; }))[]): { id: any; label: any; value: any; }[] {
+    return units.flatMap(u => {
+      const baseId = u["id"];
+      const main = {
+        id: baseId + '-' + u["canonical"],
+        label: u["canonical"],
+        value: u["canonical"]
+      };
+
+      const aliases = (u["aliases"] || []).map((alias: string) => ({
+        id: `${baseId}-${alias}`,
+        label: alias,
+        value: alias
+      }));
+
+      var results = [main, ...aliases];
+      console.log(results);
+      return results;
+    });
+  }
+    
   private async loadItems() {
     const colRef = collection(this.db, 'items');
     const q = query(colRef, orderBy('updatedAt', 'desc'));
@@ -85,7 +120,14 @@ export class ItemEntryComponent implements OnInit {
     const items = await firstValueFrom(items$);
 
     this.formArray.clear();
-    for (const it of items) {
+    for (var it of items) {
+
+      it["unitType"] = it["unitType"].flatMap((u: string) => {
+        return this.unitOptions
+          .filter(opt => opt.id.startsWith(u))
+          .map(opt => opt.id);
+      });
+
       this.formArray.push(this.createItemRow(it));
     }
   }
@@ -158,6 +200,7 @@ export class ItemEntryComponent implements OnInit {
     const v = ctrl.getRawValue();
     const now = serverTimestamp();
 
+    debugger;
     const payload = {
       canonical: v.itemHindi,
       english: v.itemEnglish,
@@ -178,4 +221,56 @@ export class ItemEntryComponent implements OnInit {
       });
     }
   }
+
+  filterAliases(event: any) {
+    const typed = event.query?.trim();
+    if (!typed) {
+      this.filteredAliases = [...this.allAliases];
+      return;
+    }
+
+    const lowerTyped = typed.toLowerCase();
+
+    const matches = this.allAliases.filter(alias =>
+      alias.toLowerCase().includes(lowerTyped)
+    );
+
+    const alreadyExists = this.allAliases.some(
+      alias => alias.toLowerCase() === lowerTyped
+    );
+
+    this.filteredAliases = alreadyExists ? matches : [typed, ...matches];
+  }
+
+  normalizeAliases(rowIndex: number) {
+    const control = this.getFormControl(rowIndex, 'aliases');
+    const raw = (control.value || []) as string[];
+
+    // Deduplicate case-insensitively while keeping original case of first occurrence
+    const seen = new Map<string, string>();
+
+    for (const alias of raw) {
+      const trimmed = alias.trim();
+      const key = trimmed.toLowerCase();
+      if (trimmed && !seen.has(key)) {
+        seen.set(key, trimmed);
+      }
+    }
+
+    const cleaned = Array.from(seen.values());
+    control.setValue(cleaned);
+
+    // Add to global alias list if not already present (case-insensitive)
+    for (const alias of cleaned) {
+      const aliasLower = alias.toLowerCase();
+      if (!this.allAliases.some(a => a.toLowerCase() === aliasLower)) {
+        this.allAliases.push(alias);
+      }
+    }
+  }
+
+  getFormControl(rowIndex: number, field: string): FormControl {
+    return this.formArray.at(rowIndex).get(field) as FormControl;
+  }
+  
 }

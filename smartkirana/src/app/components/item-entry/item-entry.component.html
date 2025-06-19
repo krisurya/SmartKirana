@@ -27,25 +27,44 @@
             <td class="col-hindi"><input pInputText [formControl]="row.get('itemHindi')" lang="hi" placeholder="यहाँ हिंदी में टाइप करें" /></td>
             <td class="col-english"><input pInputText [formControl]="row.get('itemEnglish')" /></td>
             <td class="col-aliases">
-                <p-multiSelect
+                <!-- <p-multiSelect
                 [options]="allAliases"
                 [formControl]="row.get('aliases')"
                 [maxSelectedLabels]="7"
                 display="chip"
                 appendTo="body"
                 scrollHeight="200px"
-                ></p-multiSelect>
+                [filter]="true"
+                (onFilter)="onAliasFilter($event, i)"
+                (onBlur)="onAliasBlur(i)"
+                ></p-multiSelect> -->
+                <p-autoComplete
+  [suggestions]="filteredAliases"
+  [formControl]="row.get('aliases')"
+  [multiple]="true"
+  [dropdown]="true"
+  [forceSelection]="false"
+  [placeholder]="'Select or add aliases'"
+  (completeMethod)="filterAliases($event)"
+  (onBlur)="normalizeAliases(i)"
+  scrollHeight="200px"
+  appendTo="body"
+></p-autoComplete>
             </td>
             <td class="col-price"><input type="number" pInputText [formControl]="row.get('price')" /></td>
             <td class="col-unit">
-                <p-dropdown
-                [options]="unitOptions"
-                optionLabel="label"
-                optionValue="value"
-                [formControl]="row.get('unitType')"
-                appendTo="body"
-                scrollHeight="200px"
-                ></p-dropdown>
+                <p-multiSelect
+                    [options]="unitOptions"
+                    display="chip"
+                    [maxSelectedLabels]="3"
+                    [filter]="true"
+                    optionLabel="label"
+                    optionValue="id"
+                    [formControl]="row.get('unitType')"
+                    appendTo="body"
+                    scrollHeight="200px"
+                    placeholder="Select unit aliases">
+                </p-multiSelect>
             </td>
             <td class="col-created">{{ row.get('createdAt')?.value?.toDate?.() | date:'short' }}</td>
             <td class="col-updated">{{ row.get('updatedAt')?.value?.toDate?.() | date:'short' }}</td>

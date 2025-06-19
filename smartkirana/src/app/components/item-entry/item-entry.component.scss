@@ -24,10 +24,10 @@
 :host ::ng-deep td.col-price { min-width: 80px; }
 
 :host ::ng-deep th.col-unit,
-:host ::ng-deep td.col-unit { min-width: 100px; }
+:host ::ng-deep td.col-unit { min-width: 350px; }
 
 :host ::ng-deep th.col-aliases,
-:host ::ng-deep td.col-aliases { min-width: 400px; }
+:host ::ng-deep td.col-aliases { min-width: 350px; }
 
 /* Timestamps can be narrower */
 :host ::ng-deep th.col-created,
