@@ -9,6 +9,7 @@ import {
   collectionData,
   addDoc,
   updateDoc,
+  deleteDoc,
   doc,
   query,
   orderBy,
@@ -49,15 +50,11 @@ export class ItemEntryComponent implements OnInit {
 
   unitOptions = [
     { label: 'Kilogram', value: 'Kilogram' },
-    { label: 'Litre',    value: 'Litre'    },
-    { label: 'Piece',    value: 'Piece'    }
+    { label: 'Litre', value: 'Litre' },
+    { label: 'Piece', value: 'Piece' }
   ];
 
-  allAliases = [
-    'दाल', 'अरहर', 'तोवर', 'मूंग', 'मूंग दाल', 'मूँग दाल',
-    'हरी दाल', 'हरी मूंग', 'मूंगी दाल', 'साबुत मूंग',
-    'छिलकी मूंग', 'दूध','पानी'
-  ];
+  allAliases = ['दाल','अरहर','तोवर','मूंग','मूंग दाल','मूँग दाल','हरी दाल','हरी मूंग','मूंगी दाल','साबुत मूंग','छिलकी मूंग','दूध','पानी'];
 
   async ngOnInit() {
     this.loading.set(true);
@@ -68,25 +65,24 @@ export class ItemEntryComponent implements OnInit {
 
   private createItemRow(item: any = null): FormGroup {
     return this.fb.group({
-      docId:       [ item?.docId    || '' ],            // ← Firestore doc ID
+      docId:       [item?.docId || ''],
       itemId:      [{ value: item?.id || '', disabled: true }],
-      itemHindi:   [ item?.canonical  || '', Validators.required ],
-      itemEnglish: [ item?.english    || '', Validators.required ],
-      price:       [ item?.price      || 0, [Validators.required, Validators.min(1)] ],
-      unitType:    [ item?.unitType   || '', Validators.required ],
-      aliases:     [ item?.aliases    || [], Validators.required ],
-      createdAt:   [ item?.createdAt  || null ],
-      updatedAt:   [ item?.updatedAt  || null ]
+      itemHindi:   [item?.canonical || '', Validators.required],
+      itemEnglish: [item?.english || '', Validators.required],
+      price:       [item?.price || 0, [Validators.required, Validators.min(1)]],
+      unitType:    [item?.unitType || '', Validators.required],
+      aliases:     [item?.aliases || [], Validators.required],
+      createdAt:   [item?.createdAt || null],
+      updatedAt:   [item?.updatedAt || null],
+      deleted:     [false]  // NEW: to track soft delete
     });
   }
 
   private async loadItems() {
     const colRef = collection(this.db, 'items');
-    const q      = query(colRef, orderBy('updatedAt','desc'));
-
-    // now populates `docId` from Firestore
+    const q = query(colRef, orderBy('updatedAt', 'desc'));
     const items$ = collectionData(q, { idField: 'docId' });
-    const items  = await firstValueFrom(items$);
+    const items = await firstValueFrom(items$);
 
     this.formArray.clear();
     for (const it of items) {
@@ -96,44 +92,58 @@ export class ItemEntryComponent implements OnInit {
 
   addNewBlankRow() {
     const blank = this.fb.group({
-      docId:       [''],                              // new row → empty
-      itemId:      [{ value: 'Auto Generated', disabled: true }],
-      itemHindi:   ['', Validators.required],
+      docId: [''],
+      itemId: [{ value: 'Auto Generated', disabled: true }],
+      itemHindi: ['', Validators.required],
       itemEnglish: ['', Validators.required],
-      price:       [0, [Validators.required, Validators.min(1)]],
-      unitType:    ['', Validators.required],
-      aliases:     [[], Validators.required],
-      createdAt:   [null],
-      updatedAt:   [null]
+      price: [0, [Validators.required, Validators.min(1)]],
+      unitType: ['', Validators.required],
+      aliases: [[], Validators.required],
+      createdAt: [null],
+      updatedAt: [null],
+      deleted: [false]
     });
     this.formArray.insert(0, blank);
   }
 
-  removeRow(index: number) {
-    this.formArray.removeAt(index);
+  markDeleted(index: number) {
+    const row = this.formArray.at(index);
+    row.patchValue({ deleted: true });
+    row.disable(); // Make the row read-only
   }
 
-  /** only enable when top row valid or any existing row edited+valid */
   get canSaveAll(): boolean {
     const ctrls = this.formArray.controls as FormGroup[];
-    const newValid   = ctrls[0]?.valid;
-    const editedValid = ctrls.slice(1).some(c => c.dirty && c.valid);
-    return newValid || editedValid;
+    const newValid = ctrls[0]?.get('deleted')?.value === false && ctrls[0]?.valid;
+
+    const editedValid = ctrls.slice(1).some(ctrl =>
+      !ctrl.get('deleted')?.value && ctrl.dirty && ctrl.valid
+    );
+
+    const hasDeleted = ctrls.slice(1).some(ctrl => ctrl.get('deleted')?.value);
+
+    return newValid || editedValid || hasDeleted;
   }
 
   async saveAll() {
     const ctrls = this.formArray.controls as FormGroup[];
 
-    // 1. new row (index 0)
-    if (ctrls[0].valid) {
-      await this.upsertRow(ctrls[0]);
-      ctrls[0].markAsPristine();
+    // 1. New row (insert)
+    const newRow = ctrls[0];
+    if (!newRow.get('deleted')?.value && newRow.valid) {
+      await this.upsertRow(newRow);
+      newRow.markAsPristine();
     }
 
-    // 2. edited existing rows
+    // 2. Existing rows (update or delete)
     for (let i = 1; i < ctrls.length; i++) {
       const row = ctrls[i];
-      if (row.dirty && row.valid) {
+      const v = row.getRawValue();
+      const docId = v.docId;
+
+      if (v.deleted && docId) {
+        await deleteDoc(doc(this.db, 'items', docId));
+      } else if (!v.deleted && row.dirty && row.valid && docId) {
         await this.upsertRow(row);
         row.markAsPristine();
       }
@@ -145,27 +155,25 @@ export class ItemEntryComponent implements OnInit {
   }
 
   private async upsertRow(ctrl: FormGroup) {
-    const v   = ctrl.getRawValue();
+    const v = ctrl.getRawValue();
     const now = serverTimestamp();
 
     const payload = {
       canonical: v.itemHindi,
-      english:   v.itemEnglish,
-      price:     v.price,
-      unitType:  v.unitType,
-      aliases:   v.aliases,
+      english: v.itemEnglish,
+      price: v.price,
+      unitType: v.unitType,
+      aliases: v.aliases,
       updatedAt: now
     };
 
     if (v.docId) {
-      // existing
       const docRef = doc(this.db, 'items', v.docId);
       await updateDoc(docRef, payload);
     } else {
-      // new
       await addDoc(collection(this.db, 'items'), {
         ...payload,
-        id:        uuidv4(),
+        id: uuidv4(),
         createdAt: now
       });
     }

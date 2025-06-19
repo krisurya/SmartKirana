@@ -58,6 +58,11 @@
   box-sizing: border-box;
 }
 
+::ng-deep .p-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .item-container {
   width: 90%;           /* table + padding take up 90% of viewport */
   margin: 0 auto;       /* horizontally center (5% left/right) */
