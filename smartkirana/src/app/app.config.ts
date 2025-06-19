@@ -14,20 +14,26 @@ import { SpeechService } from './services/speech.service';
 import { environment } from '../../environment';
 import { FirestoreService } from './services/firestore.service';
 import { UnitMappingService } from './services/unit-mapping.service';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
+import { ItemEntryComponent } from './components/item-entry/item-entry.component';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),
     provideAnimations(),
-    importProvidersFrom(ReactiveFormsModule),
-
     // ✅ Firebase
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore()),
 
+    providePrimeNG({ theme: { preset: Aura } }),
+    importProvidersFrom(ReactiveFormsModule),
+
+
     // ✅ Your services
     SpeechService,
     VoiceOrderComponent,
+    ItemEntryComponent,
     FirestoreService,
     UnitMappingService,
 
@@ -36,6 +42,10 @@ export const appConfig: ApplicationConfig = {
       {
         path: 'voice-order',
         loadComponent: () => import('./components/voice-order/voice-order.component').then(m => m.VoiceOrderComponent)
+      },
+      {
+        path: '',
+        loadComponent: () => import('./components/item-entry/item-entry.component').then(m => m.ItemEntryComponent)
       }
     ]),
   ],

@@ -17,7 +17,6 @@ export class OrderParserService {
   constructor(private http: HttpClient) {}
 
   parseOrder(text: string): Observable<{ order: OrderItem[] }> {
-    console.log('Calling backend with text:', text);
     return this.http.post<{ order: OrderItem[] }>(this.apiUrl, { text });
   }
 }

@@ -1,0 +1,95 @@
+[
+  {
+    "id": "unt001",
+    "canonical": "किलोग्राम",
+    "english": "Kilogram",
+    "aliases": [
+      "किलो",
+      "kg",
+      "kgs",
+      "kilogram",
+      "किलोग्राम"
+    ]
+  },
+  {
+    "id": "unt002",
+    "canonical": "ग्राम",
+    "english": "Gram",
+    "aliases": [
+      "ग्राम",
+      "g",
+      "grams",
+      "gm",
+      "gram"
+    ]
+  },
+  {
+    "id": "unt003",
+    "canonical": "लीटर",
+    "english": "Litre",
+    "aliases": [
+      "लीटर",
+      "litre",
+      "लीटर्स",
+      "l",
+      "lit",
+      "ltr"
+    ]
+  },
+  {
+    "id": "unt004",
+    "canonical": "मिलीलीटर",
+    "english": "Millilitre",
+    "aliases": [
+      "मिलीलीटर",
+      "ml",
+      "millilitre",
+      "मिली",
+      "mls"
+    ]
+  },
+  {
+    "id": "unt005",
+    "canonical": "पैकेट",
+    "english": "Packet",
+    "aliases": [
+      "पैकेट",
+      "packet",
+      "pack"
+    ]
+  },
+  {
+    "id": "unt006",
+    "canonical": "दर्जन",
+    "english": "Dozen",
+    "aliases": [
+      "डजन",
+      "डज़न",
+      "dozen",
+      "dozan"
+    ]
+  },
+  {
+    "id": "unt007",
+    "canonical": "टुकड़ा",
+    "english": "Piece",
+    "aliases": [
+      "पीस",
+      "piece",
+      "pcs",
+      "पीसस",
+      "टुकड़ा"
+    ]
+  },
+  {
+    "id": "unt008",
+    "canonical": "डब्बा",
+    "english": "Box",
+    "aliases": [
+      "डब्बा",
+      "box",
+      "dabba",
+      "बॉक्स"
+    ]
+  }
+]

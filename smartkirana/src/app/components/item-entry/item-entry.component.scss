@@ -1,0 +1,68 @@
+:host ::ng-deep .p-table {
+  width: 100%;
+}
+
+.p-button-sm {
+  font-size: 0.875rem;
+}
+
+:host ::ng-deep .p-datatable table {
+  table-layout: auto;  // let columns grow/shrink
+}
+
+/* Minimum widths for each column */
+:host ::ng-deep th.col-id,
+:host ::ng-deep td.col-id { min-width: 80px; }
+
+:host ::ng-deep th.col-hindi,
+:host ::ng-deep td.col-hindi { min-width: 120px; }
+
+:host ::ng-deep th.col-english,
+:host ::ng-deep td.col-english { min-width: 120px; }
+
+:host ::ng-deep th.col-price,
+:host ::ng-deep td.col-price { min-width: 80px; }
+
+:host ::ng-deep th.col-unit,
+:host ::ng-deep td.col-unit { min-width: 100px; }
+
+:host ::ng-deep th.col-aliases,
+:host ::ng-deep td.col-aliases { min-width: 400px; }
+
+/* Timestamps can be narrower */
+:host ::ng-deep th.col-created,
+:host ::ng-deep td.col-created,
+:host ::ng-deep th.col-updated,
+:host ::ng-deep td.col-updated { min-width: 100px; }
+
+:host ::ng-deep th.col-action,
+:host ::ng-deep td.col-action { min-width: 60px; }
+
+/* MultiSelect: wrap tokens + smaller font */
+:host ::ng-deep .p-multiselect-label,
+:host ::ng-deep .p-multiselect-token-label {
+  white-space: normal !important; 
+  word-break: break-word; 
+  margin: 2px;
+  font-size: 0.75rem;
+  line-height: 1.2;       
+  max-height: 3.6em;      /* approx 3 lines */
+  overflow: auto;
+}
+
+/* Ensure the input and dropdown fill the cell width */
+:host ::ng-deep td input,
+:host ::ng-deep td .p-dropdown,
+:host ::ng-deep td .p-multiselect {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.item-container {
+  width: 90%;           /* table + padding take up 90% of viewport */
+  margin: 0 auto;       /* horizontally center (5% left/right) */
+}
+.item-container > button {
+  display: block;
+  margin-bottom: 0.5rem;
+}

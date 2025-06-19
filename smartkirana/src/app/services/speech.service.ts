@@ -17,14 +17,12 @@ export class SpeechService {
 
       this.recognition.onresult = (event: any) => {
         const transcript = event.results[event.results.length - 1][0].transcript;
-        console.log('SpeechService: Recognized text:', transcript);
         this.zone.run(() => {
           this.speechSubject.next(transcript);
         });
       };
 
       this.recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
         // Restart on error to maintain continuity
         if (event.error === 'no-speech' || event.error === 'network') {
           this.restartListening();
@@ -32,7 +30,6 @@ export class SpeechService {
       };
 
       this.recognition.onend = () => {
-        console.log('Speech recognition ended, restarting...');
         this.restartListening();
       };
     } else {
