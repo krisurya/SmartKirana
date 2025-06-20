@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +22,7 @@ import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
+import { FirestoreService } from '../../services/firestore.service';
 
 @Component({
   selector: 'app-unit-entry',
@@ -41,10 +42,10 @@ import { ButtonModule } from 'primeng/button';
 export class UnitEntryComponent implements OnInit {
   private fb = inject(FormBuilder);
   private db = inject(Firestore);
+  private firestoreService = inject(FirestoreService);
 
-  formArray = this.fb.array<FormGroup>([]);
+formArray = this.fb.array<FormGroup>([]);
   loading = signal(false);
-
   allAliases = ['किलो', 'kg', 'kgs', 'kilogram', 'किलोग्राम', 'लीटर', 'ltr', 'ml', 'पीस', 'unit'];
   mappedAllAliases: { label: string; value: string; }[] = [];
 
@@ -75,16 +76,7 @@ export class UnitEntryComponent implements OnInit {
   }
 
   private async loadUnits() {
-    const colRef = collection(this.db, 'units');
-    const q = query(
-      colRef,
-      where('deletedAt', '==', null),
-      orderBy('updatedAt', 'desc')
-    );
-
-    const units$ = collectionData(q, { idField: 'id' });
-    const units = await firstValueFrom(units$);
-
+    const units = await this.firestoreService.getUnits();
     this.formArray.clear();
     for (const u of units) {
       this.formArray.push(this.createUnitRow(u));
