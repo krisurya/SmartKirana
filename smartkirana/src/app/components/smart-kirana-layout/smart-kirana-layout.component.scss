@@ -1,0 +1,49 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.sidebar {
+  width: 220px;                  /* ✅ Fixed width */
+  min-width: 220px;              /* ✅ Prevent shrinking */
+  max-width: 220px;              /* ✅ Prevent expanding */
+  background-color: #ffffff;
+  border-right: 1px solid #ccc;
+  padding: 1rem;
+  box-sizing: border-box;
+  flex-shrink: 0;                /* ✅ Prevent layout jump */
+}
+
+.sidebar-title {
+  font-size: 20px;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;                  /* ✅ Prevent overflow from children */
+}
+
+.topbar {
+  background-color: #2c3e50;
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.main-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  height: 100%;
+}
+
+::ng-deep .p-panelmenu {
+  width: 100% !important;
+}

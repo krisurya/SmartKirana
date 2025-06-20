@@ -18,6 +18,11 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { ItemEntryComponent } from './components/item-entry/item-entry.component';
 import { UnitEntryComponent } from './components/unit-entry/unit-entry.component';
+import { SpeechRecorderComponent } from './components/speech-recorder/speech-recorder.component';
+import { PrintSlipComponent } from './components/print-slip/print-slip.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { CustomersComponent } from './components/customers/customers.component';
+import { SmartKiranaLayoutComponent } from './components/smart-kirana-layout/smart-kirana-layout.component';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -36,6 +41,8 @@ export const appConfig: ApplicationConfig = {
     VoiceOrderComponent,
     ItemEntryComponent,
     UnitEntryComponent,
+    SpeechRecorderComponent,
+    PrintSlipComponent,
     FirestoreService,
     UnitMappingService,
 
@@ -43,19 +50,15 @@ export const appConfig: ApplicationConfig = {
     provideRouter([
       {
         path: '',
-        loadComponent: () => import('./components/unit-entry/unit-entry.component').then(m => m.UnitEntryComponent)
-      },
-      {
-        path: 'voice-order',
-        loadComponent: () => import('./components/voice-order/voice-order.component').then(m => m.VoiceOrderComponent)
-      },
-      {
-        path: 'item-entry',
-        loadComponent: () => import('./components/item-entry/item-entry.component').then(m => m.ItemEntryComponent)
-      },
-      {
-        path: 'unit-entry',
-        loadComponent: () => import('./components/unit-entry/unit-entry.component').then(m => m.UnitEntryComponent)
+        component: SmartKiranaLayoutComponent,
+        children: [
+          { path: 'dashboard', component: DashboardComponent },
+          { path: 'items', component: ItemEntryComponent },
+          { path: 'units', component: UnitEntryComponent },
+          { path: 'voice-order', component: VoiceOrderComponent },
+          { path: 'customers', component: CustomersComponent },
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+        ]
       }
     ]),
   ],

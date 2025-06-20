@@ -1,0 +1,17 @@
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Smart Kirana</h2>
+    <p-panelMenu [model]="menuItems"></p-panelMenu>
+  </aside>
+
+  <!-- Main Area -->
+  <main class="content">
+    <header class="topbar">
+      <h3>Smart Kirana</h3>
+    </header>
+    <section class="main-content">
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</div>

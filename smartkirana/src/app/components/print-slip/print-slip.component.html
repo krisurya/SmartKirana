@@ -1,0 +1,25 @@
+<div id="slip">
+  <div class="header">
+    <h3>Smart Kirana</h3>
+    <h4>Tularam Kirana Store</h4>
+    <div>{{ now }}</div>
+    <div>Gurshaiganj</div>
+    <hr />
+  </div>
+
+  <table>
+    <tbody>
+      <tr *ngFor="let item of items">
+        <td>{{ item.name }}</td>
+        <td style="text-align: right">{{ item.quantity }} {{ item.unit }}</td>
+        <td style="text-align: right">{{ item.price | number:'1.0-2' }}*{{item.quantity}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="total" style="margin-top: 8px; text-align: right;">
+    Total: ₹{{ total | number:'1.0-2' }}
+  </div>
+</div>
+
+<button (click)="printSlip()">🖨️ Print</button>

@@ -15,13 +15,13 @@ export class UnitMappingService {
   constructor(private http: HttpClient, private firestoreService: FirestoreService) {}
 
   async loadMappings(): Promise<void> {
-    const unitResponse: any = await firstValueFrom(this.http.get('/assets/data/unit-mappings.json'));
     const numberResponse: any = await firstValueFrom(this.http.get('/assets/data/hindi-number-mappings.json'));
     const itemMappings: any = await this.firestoreService.fetchAllFromFirestore(this.db, 'items');
+    const unitMappings: any = await this.firestoreService.fetchAllFromFirestore(this.db, 'units');
 
     // Load unit aliases
-    if (unitResponse && Array.isArray(unitResponse.units)) {
-        for (const entry of unitResponse.units) {
+    if (unitMappings && Array.isArray(unitMappings)) {
+        for (const entry of unitMappings) {
           for (const alias of entry.aliases) {
             this.unitMap[alias.toLowerCase()] = entry.normalized;
           }

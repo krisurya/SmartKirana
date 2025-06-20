@@ -1,0 +1,33 @@
+<div class="p-2 flex gap-2 items-center">
+  <p-button
+    icon="pi pi-microphone"
+    [label]="isRecording() ? 'Recording...' : label"
+    [disabled]="isRecording()"
+    (onClick)="startRecording()"
+    styleClass="p-button-sm p-button-success"
+  ></p-button>
+
+  <p-button
+    icon="pi pi-stop"
+    label="Stop"
+    (onClick)="stopRecording()"
+    [disabled]="!isRecording()"
+    styleClass="p-button-sm p-button-danger"
+  ></p-button>
+
+  <p-button
+    icon="{{ isPlaying() ? 'pi pi-pause' : 'pi pi-play' }}"
+    label="{{ isPlaying() ? 'Pause' : 'Play' }}"
+    (onClick)="togglePlayPause()"
+    [disabled]="!audioUrl"
+    styleClass="p-button-sm p-button-secondary"
+  ></p-button>
+
+  <span *ngIf="duration() > 0">{{ duration() | number:'1.1-1' }}s</span>
+</div>
+
+<p-progressBar
+  *ngIf="progress() > 0"
+  [value]="progress()"
+  styleClass="w-full mt-2"
+></p-progressBar>
