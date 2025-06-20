@@ -6,3 +6,17 @@
   background-color: #e0e0e0 !important;
   color: #888 !important;
 }
+.editor-with-mic {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-input {
+  flex: 1;
+}
+
+.mic-button {
+  width: 2rem;
+  height: 2rem;
+}

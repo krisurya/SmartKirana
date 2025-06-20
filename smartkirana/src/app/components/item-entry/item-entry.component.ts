@@ -27,6 +27,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
+import { FirestoreService } from '../../services/firestore.service';
 
 @Component({
   selector: 'app-item-entry',
@@ -48,17 +49,17 @@ import { FormsModule } from '@angular/forms';
 export class ItemEntryComponent implements OnInit {
   private fb = inject(FormBuilder);
   private db = inject(Firestore);
+  private firestoreService = inject(FirestoreService);
 
   formArray = this.fb.array<FormGroup>([]);
   loading = signal(false);
-
   unitOptions: { id:any, label: any; value: any; }[] = [];
   allAliases = ['दाल','अरहर','तोवर','मूंग','मूंग दाल','मूँग दाल','हरी दाल','हरी मूंग','मूंगी दाल','साबुत मूंग','छिलकी मूंग','दूध','पानी'];
   filteredAliases: string[] = [];
 
   async ngOnInit() {
     this.loading.set(true);
-    await this.loadUnits();
+    this.unitOptions = await this.firestoreService.getAllPossibleUnits();
     await this.loadItems();
     this.addNewBlankRow();
     this.loading.set(false);
@@ -79,40 +80,6 @@ export class ItemEntryComponent implements OnInit {
     });
   }
 
-  private async loadUnits() {
-    const colRef = collection(this.db, 'units');
-    const q = query(
-      colRef,
-      where('deletedAt', '==', null),
-      orderBy('updatedAt', 'desc')
-    );
-
-    const units$ = collectionData(q, { idField: 'id' });
-    const units = await firstValueFrom(units$);
-    this.unitOptions = this.getAllPossibleUnits(units);
-  }
-
-  getAllPossibleUnits(units: (DocumentData | (DocumentData & { id: string; }))[]): { id: any; label: any; value: any; }[] {
-    return units.flatMap(u => {
-      const baseId = u["id"];
-      const main = {
-        id: baseId + '-' + u["canonical"],
-        label: u["canonical"],
-        value: u["canonical"]
-      };
-
-      const aliases = (u["aliases"] || []).map((alias: string) => ({
-        id: `${baseId}-${alias}`,
-        label: alias,
-        value: alias
-      }));
-
-      var results = [main, ...aliases];
-      console.log(results);
-      return results;
-    });
-  }
-    
   private async loadItems() {
     const colRef = collection(this.db, 'items');
     const q = query(colRef, orderBy('updatedAt', 'desc'));

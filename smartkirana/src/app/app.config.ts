@@ -23,6 +23,7 @@ import { PrintSlipComponent } from './components/print-slip/print-slip.component
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CustomersComponent } from './components/customers/customers.component';
 import { SmartKiranaLayoutComponent } from './components/smart-kirana-layout/smart-kirana-layout.component';
+import { SpeechEditorCellComponent } from './components/speech-editor-cell/speech-editor-cell.component';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -42,6 +43,7 @@ export const appConfig: ApplicationConfig = {
     ItemEntryComponent,
     UnitEntryComponent,
     SpeechRecorderComponent,
+    SpeechEditorCellComponent,
     PrintSlipComponent,
     FirestoreService,
     UnitMappingService,

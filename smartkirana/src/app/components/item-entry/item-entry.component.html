@@ -1,83 +1,81 @@
-<div class="item-container">
-    <p-table
-    [value]="formArray.controls"
-    [paginator]="true"
-    [rows]="10"
-    [responsiveLayout]="'scroll'"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-    >
-    <ng-template pTemplate="header">
-        <tr>
-            <th class="col-id">ItemID</th>
-            <th class="col-hindi">Hindi Name</th>
-            <th class="col-english">English Name</th>
-            <th class="col-aliases">Aliases</th>
-            <th class="col-price">Price</th>
-            <th class="col-unit">Unit</th>
-            <th class="col-created">CreatedAt</th>
-            <th class="col-updated">UpdatedAt</th>
-            <th class="col-action">Action</th>
-        </tr>
-    </ng-template>
+<p-table
+[value]="formArray.controls"
+[paginator]="true"
+[rows]="10"
+[responsiveLayout]="'scroll'"
+[showCurrentPageReport]="true"
+currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+>
+<ng-template pTemplate="header">
+    <tr>
+        <th class="col-id">ItemID</th>
+        <th class="col-hindi">Hindi Name</th>
+        <th class="col-english">English Name</th>
+        <th class="col-aliases">Aliases</th>
+        <th class="col-price">Price</th>
+        <th class="col-unit">Unit</th>
+        <th class="col-created">CreatedAt</th>
+        <th class="col-updated">UpdatedAt</th>
+        <th class="col-action">Action</th>
+    </tr>
+</ng-template>
 
-    <ng-template pTemplate="body" let-row let-i="rowIndex">
-        <tr>
-            <td class="col-id">{{ row.get('itemId')?.value }}</td>
-            <td class="col-hindi"><input pInputText [formControl]="row.get('itemHindi')" lang="hi" placeholder="यहाँ हिंदी में टाइप करें" /></td>
-            <td class="col-english"><input pInputText [formControl]="row.get('itemEnglish')" /></td>
-            <td class="col-aliases">
-                <!-- <p-multiSelect
-                [options]="allAliases"
-                [formControl]="row.get('aliases')"
-                [maxSelectedLabels]="7"
+<ng-template pTemplate="body" let-row let-i="rowIndex">
+    <tr>
+        <td class="col-id">{{ row.get('itemId')?.value }}</td>
+        <td class="col-hindi"><input pInputText [formControl]="row.get('itemHindi')" lang="hi" placeholder="यहाँ हिंदी में टाइप करें" /></td>
+        <td class="col-english"><input pInputText [formControl]="row.get('itemEnglish')" /></td>
+        <td class="col-aliases">
+            <!-- <p-multiSelect
+            [options]="allAliases"
+            [formControl]="row.get('aliases')"
+            [maxSelectedLabels]="7"
+            display="chip"
+            appendTo="body"
+            scrollHeight="200px"
+            [filter]="true"
+            (onFilter)="onAliasFilter($event, i)"
+            (onBlur)="onAliasBlur(i)"
+            ></p-multiSelect> -->
+            <p-autoComplete
+[suggestions]="filteredAliases"
+[formControl]="row.get('aliases')"
+[multiple]="true"
+[dropdown]="true"
+[forceSelection]="false"
+[placeholder]="'Select or add aliases'"
+(completeMethod)="filterAliases($event)"
+(onBlur)="normalizeAliases(i)"
+scrollHeight="200px"
+appendTo="body"
+></p-autoComplete>
+        </td>
+        <td class="col-price"><input type="number" pInputText [formControl]="row.get('price')" /></td>
+        <td class="col-unit">
+            <p-multiSelect
+                [options]="unitOptions"
                 display="chip"
+                [maxSelectedLabels]="3"
+                [filter]="true"
+                optionLabel="label"
+                optionValue="id"
+                [formControl]="row.get('unitType')"
                 appendTo="body"
                 scrollHeight="200px"
-                [filter]="true"
-                (onFilter)="onAliasFilter($event, i)"
-                (onBlur)="onAliasBlur(i)"
-                ></p-multiSelect> -->
-                <p-autoComplete
-  [suggestions]="filteredAliases"
-  [formControl]="row.get('aliases')"
-  [multiple]="true"
-  [dropdown]="true"
-  [forceSelection]="false"
-  [placeholder]="'Select or add aliases'"
-  (completeMethod)="filterAliases($event)"
-  (onBlur)="normalizeAliases(i)"
-  scrollHeight="200px"
-  appendTo="body"
-></p-autoComplete>
-            </td>
-            <td class="col-price"><input type="number" pInputText [formControl]="row.get('price')" /></td>
-            <td class="col-unit">
-                <p-multiSelect
-                    [options]="unitOptions"
-                    display="chip"
-                    [maxSelectedLabels]="3"
-                    [filter]="true"
-                    optionLabel="label"
-                    optionValue="id"
-                    [formControl]="row.get('unitType')"
-                    appendTo="body"
-                    scrollHeight="200px"
-                    placeholder="Select unit aliases">
-                </p-multiSelect>
-            </td>
-            <td class="col-created">{{ row.get('createdAt')?.value?.toDate?.() | date:'short' }}</td>
-            <td class="col-updated">{{ row.get('updatedAt')?.value?.toDate?.() | date:'short' }}</td>
-            <td *ngIf="!row.get('deleted')?.value">
-                <button pButton type="button" label="Delete" severity="danger" icon="pi pi-trash" (click)="markDeleted(i)"></button>
-            </td>
-            <td *ngIf="row.get('deleted')?.value">
-                <span class="text-danger">Marked Deleted</span>
-            </td>
-        </tr>
-    </ng-template>
-    </p-table>
+                placeholder="Select unit aliases">
+            </p-multiSelect>
+        </td>
+        <td class="col-created">{{ row.get('createdAt')?.value?.toDate?.() | date:'short' }}</td>
+        <td class="col-updated">{{ row.get('updatedAt')?.value?.toDate?.() | date:'short' }}</td>
+        <td *ngIf="!row.get('deleted')?.value">
+            <button pButton type="button" label="Delete" severity="danger" icon="pi pi-trash" (click)="markDeleted(i)"></button>
+        </td>
+        <td *ngIf="row.get('deleted')?.value">
+            <span class="text-danger">Marked Deleted</span>
+        </td>
+    </tr>
+</ng-template>
+</p-table>
 
-    <button pButton label="+ Add Row" icon="pi pi-plus" class="mb-2" (click)="addNewBlankRow()"></button>
-    <button pButton label="Save All" icon="pi pi-save" class="mt-2" (click)="saveAll()" [disabled]="!canSaveAll"></button>    
-</div>
+<button pButton label="+ Add Row" icon="pi pi-plus" class="mb-2" (click)="addNewBlankRow()"></button>
+<button pButton label="Save All" icon="pi pi-save" class="mt-2" (click)="saveAll()" [disabled]="!canSaveAll"></button>    

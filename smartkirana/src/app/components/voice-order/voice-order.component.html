@@ -11,7 +11,7 @@
 </div>
 
 <!-- [rowStyleClass]="getRowClass"  -->
-<p-table [value]="parsedOrder" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
+<p-table #table [value]="parsedOrder" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
     <ng-template #header>
         <tr>
             <th style="width:40%">
@@ -38,15 +38,16 @@
         <tr [ngClass]="{ 'deleted-row': row.deleted }">
             <!-- Name Column -->
             <td [pEditableColumn]="row.name" pEditableColumnField="name" *ngIf="!row.deleted">
-                <p-cellEditor>
-                    <ng-template #input>
-                        <input
-                            pInputText
-                            type="text"
-                            [(ngModel)]="row.name" />
+                <p-cellEditor #cellEditor>
+                    <ng-template pTemplate="input">
+                        <app-speech-editor-cell
+                            [(model)]="row.name"
+                            (started)="activateEdit(row)"
+                            (completed)="activateEdit(row)"
+                        ></app-speech-editor-cell>
                     </ng-template>
-                    <ng-template #output>
-                        {{ row.name }}
+                    <ng-template pTemplate="output">
+                    {{ row.name }}
                     </ng-template>
                 </p-cellEditor>
             </td>
@@ -74,15 +75,23 @@
             <!-- Unit Column -->
             <td [pEditableColumn]="row.unit" pEditableColumnField="unit" *ngIf="!row.deleted">
                 <p-cellEditor>
-                    <ng-template #input>
-                        <input
-                            pInputText
-                            [(ngModel)]="row.unit" />
+                    <ng-template pTemplate="input">
+                        <p-autoComplete
+                            [(ngModel)]="row.unit"
+                            [suggestions]="filteredUnits"
+                            (completeMethod)="filterUnits($event)"
+                            [field]="'label'"
+                            [dropdown]="true"
+                            placeholder="Select Unit"
+                            class="w-full"
+                        ></p-autoComplete>
                     </ng-template>
-                    <ng-template #output>
-                        {{ row.unit }}
+
+                    <ng-template pTemplate="output">
+                        {{ row.unit || 'Select Unit' }}
                     </ng-template>
                 </p-cellEditor>
+
             </td>
             <td *ngIf="row.deleted">
                 {{ row.unit }}

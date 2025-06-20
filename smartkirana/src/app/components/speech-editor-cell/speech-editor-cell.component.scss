@@ -1,0 +1,14 @@
+.editor-with-mic {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editor-input {
+  flex: 1;
+}
+
+.mic-button {
+  width: 2.2rem;
+  height: 2.2rem;
+}

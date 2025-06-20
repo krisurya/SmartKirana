@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { SpeechService } from '../../services/speech.service';
 import { CommonModule, NgIf } from '@angular/common';
 import { OrderParserService } from '../../services/order-parser.service';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
@@ -10,6 +10,9 @@ import { FormsModule } from '@angular/forms';
 import { OrderItem } from '../../models/api-response';
 import { SpeechRecorderComponent } from '../speech-recorder/speech-recorder.component';
 import { PrintSlipComponent } from '../print-slip/print-slip.component';
+import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-cell.component';
+import { FirestoreService } from '../../services/firestore.service';
+import { AutoComplete } from 'primeng/autocomplete';
 
 interface ParsedItem {
   name: string;
@@ -23,12 +26,16 @@ interface ParsedItem {
 
 @Component({
   standalone: true,
-  imports: [NgIf, CommonModule, TableModule, FormsModule, ButtonModule, DropdownModule, InputTextModule, SpeechRecorderComponent, PrintSlipComponent],
+  imports: [NgIf, CommonModule, TableModule, FormsModule, ButtonModule, DropdownModule, InputTextModule, 
+            SpeechRecorderComponent, PrintSlipComponent, SpeechEditorCellComponent, AutoComplete],
   selector: 'app-voice-order',
   templateUrl: './voice-order.component.html',
   styleUrls: ['./voice-order.component.scss']
 })
 export class VoiceOrderComponent {
+  private fireStoreService = inject(FirestoreService);
+
+  @ViewChild('table') table!: Table;
   recognizedText = '';
   isListening = false;
   parsedOrder: ParsedItem[] = [];
@@ -37,6 +44,8 @@ export class VoiceOrderComponent {
   itemAudios: { [key: number]: Blob } = {};
   fullRecordingAudio: Blob | null = null;
   unMatchedItems: any[] = [];
+  filteredUnits: any[] = [];
+  unitOptions: any[] = [];
 
 
   constructor(
@@ -50,6 +59,10 @@ export class VoiceOrderComponent {
       this.processText(text);
       this.recognizedText += (this.recognizedText ? '\n' : '') + (text + ", ");
     });
+  }
+
+  async ngOnInit(){
+    this.unitOptions = await this.fireStoreService.getAllPossibleUnits();
   }
 
   processText(text: string) {
@@ -108,5 +121,40 @@ export class VoiceOrderComponent {
 
   get validOrder(): ParsedItem[]{
     return this.parsedOrder.filter(x => x.price > 0 && x.quantity > 0 && !x.deleted);
+  }
+
+  startVoiceInput(row: any): void {
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'hi-IN'; // Hindi recognition
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.trim();
+      row.name = transcript;
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+    };
+
+    recognition.start();
+  }
+
+  activateEdit(row: any) {
+    this.table.initRowEdit(row);
+  }
+
+  filterUnits(event: any) {
+    const query = event.query.toLowerCase();
+    this.filteredUnits = this.unitOptions.filter(unit =>
+      unit.label.toLowerCase().includes(query)
+    );
   }
 }

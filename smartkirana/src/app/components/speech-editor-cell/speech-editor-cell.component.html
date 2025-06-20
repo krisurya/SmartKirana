@@ -1,0 +1,20 @@
+<div class="editor-with-mic">
+  <input
+    type="text"
+    pInputText
+    [(ngModel)]="model"
+    (ngModelChange)="onManualChange($event)"
+    class="editor-input"
+  />
+
+  <button
+    type="button"
+    pButton
+    [disabled]="isListening"
+    [icon]="isListening ? 'pi pi-spin pi-spinner' : 'pi pi-microphone'"
+    (click)="startRecognition()"
+    class="mic-button"
+  ></button>
+
+  <p-toast></p-toast>
+</div>

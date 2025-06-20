@@ -23,6 +23,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
 import { FirestoreService } from '../../services/firestore.service';
+import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-cell.component';
 
 @Component({
   selector: 'app-unit-entry',
@@ -34,7 +35,8 @@ import { FirestoreService } from '../../services/firestore.service';
     TableModule,
     InputTextModule,
     MultiSelectModule,
-    ButtonModule
+    ButtonModule,
+    SpeechEditorCellComponent
   ],
   templateUrl: './unit-entry.component.html',
   styleUrls: ['./unit-entry.component.scss']
@@ -172,5 +174,15 @@ formArray = this.fb.array<FormGroup>([]);
     const docRef = doc(this.db, 'units', docId);
     await updateDoc(docRef, { deletedAt: serverTimestamp() }); // Soft delete, OR:
     // await deleteDoc(docRef); // Uncomment this to perform hard delete
+  }
+ 
+  getFormValue(row: FormGroup, key: string): string {
+    return row.get(key)?.value || '';
+  }
+
+  setFormValue(row: FormGroup, key: string, value: string) {
+    const control = row.get(key);
+    control?.setValue(value);
+    control?.markAsDirty();
   }
 }

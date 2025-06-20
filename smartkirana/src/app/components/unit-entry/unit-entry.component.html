@@ -16,10 +16,17 @@
           <input pInputText [formControl]="row.get('unitId')" readonly />
         </td>
         <td>
-          <input pInputText [formControl]="row.get('canonical')" />
+          <app-speech-editor-cell
+            [model]="getFormValue(row, 'canonical')"
+            (modelChange)="setFormValue(row, 'canonical', $event)"
+          ></app-speech-editor-cell>
         </td>
         <td>
-          <input pInputText [formControl]="row.get('english')" />
+          <app-speech-editor-cell
+            [language]="'en-IN'"
+            [model]="getFormValue(row, 'english')"
+            (modelChange)="setFormValue(row, 'english', $event)"
+          ></app-speech-editor-cell>
         </td>
         <td style="min-width: 250px;">
           <p-multiSelect
