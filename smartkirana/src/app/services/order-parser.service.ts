@@ -1,12 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface OrderItem {
-  qty: number;
-  item: string;
-  unit: string;
-}
+import { OrderResponse } from '../models/api-response';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +11,7 @@ export class OrderParserService {
 
   constructor(private http: HttpClient) {}
 
-  parseOrder(text: string): Observable<{ order: OrderItem[] }> {
-    return this.http.post<{ order: OrderItem[] }>(this.apiUrl, { text });
+  parseOrder(text: string): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(this.apiUrl, { text });
   }
 }

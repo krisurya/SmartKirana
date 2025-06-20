@@ -1,20 +1,23 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import Fuse from 'fuse.js';
+import { Firestore } from '@angular/fire/firestore';
+import { FirestoreService } from './firestore.service';
 
 @Injectable({ providedIn: 'root' })
 export class UnitMappingService {
+  private db = inject(Firestore);
   private unitMap: { [alias: string]: string } = {};
   hindiNumberMap: { [word: string]: number } = {};
   private fuse!: Fuse<{ name: string }>;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private firestoreService: FirestoreService) {}
 
   async loadMappings(): Promise<void> {
     const unitResponse: any = await firstValueFrom(this.http.get('/assets/data/unit-mappings.json'));
     const numberResponse: any = await firstValueFrom(this.http.get('/assets/data/hindi-number-mappings.json'));
-    const itemMappings: any = await firstValueFrom(this.http.get('/assets/data/item-unit-mappings.json'));
+    const itemMappings: any = await this.firestoreService.fetchAllFromFirestore(this.db, 'items');
 
     // Load unit aliases
     if (unitResponse && Array.isArray(unitResponse.units)) {
@@ -35,7 +38,7 @@ export class UnitMappingService {
       }
 
     // Setup Fuse.js for fuzzy matching items
-    this.fuse = new Fuse(itemMappings.items, {
+    this.fuse = new Fuse(itemMappings, {
       keys: ['name'],
       threshold: 0.3 // adjust sensitivity
     });

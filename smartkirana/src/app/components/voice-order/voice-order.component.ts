@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
+import { OrderItem } from '../../models/api-response';
 
 interface ParsedItem {
   name: string;
@@ -31,12 +32,6 @@ export class VoiceOrderComponent {
   isListening = false;
   parsedOrder: any[] = [];
   quantities = Array.from({ length: 20 }, (_, i) => ({ label: `${i + 1}`, value: i + 1 }));
-  units = [
-    { label: 'किलो', value: 'kg' },
-    { label: 'लीटर', value: 'litre' },
-    { label: 'ग्राम', value: 'g' },
-    { label: 'मिलीलीटर', value: 'ml' }
-  ];
 
   itemAudios: { [key: number]: Blob } = {};
   fullRecordingAudio: Blob | null = null;
@@ -51,7 +46,9 @@ export class VoiceOrderComponent {
     this.speechService.speech$.subscribe(text => {
       this.orderParser.parseOrder(text).subscribe(
         (res) => {
-          this.parsedOrder.push(...res.order);
+          const parsedItems = this.mapParsedOrdersToUI(res.order.order);
+          this.parsedOrder.push(...parsedItems);
+          
           console.log(this.parsedOrder);
         },
         (err) => {
@@ -116,14 +113,6 @@ export class VoiceOrderComponent {
         items.push({ quantity: quantityAlt ? quantityAlt : 0, unit: unit ? unit : 'XX', name: item ? item : 'XXXX' });
         i += 2;
       }
-
-      // if (unit && !isNaN(quantityAlt)) {
-      //   const item = this.unitMappingService.getFuzzyItem(words[i]);
-      //   if (item) {
-      //     items.push({ quantity: quantityAlt, unit, name: item });
-      //     i += 2;
-      //   }
-      // }
     }
 
     return items;
@@ -160,5 +149,13 @@ export class VoiceOrderComponent {
     // optional: pause full recording
   }
 
+  mapParsedOrdersToUI(parsedOrders: OrderItem[]): ParsedItem[] {
+    return parsedOrders.map((item): ParsedItem => ({
+      name: item.item.canonical,        // or item.item.english if preferred
+      quantity: item.qty,
+      unit: item.unit.canonical,        // or item.unit.english if preferred
+      audioUrl: undefined               // optionally attach recording later
+    }));
+  }
 
 }

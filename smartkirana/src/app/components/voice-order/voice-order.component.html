@@ -14,30 +14,30 @@
     </ng-template>
     <ng-template #body let-item let-editing="editing">
         <tr>
-            <td [pEditableColumn]="item.item" pEditableColumnField="name">
+            <td [pEditableColumn]="item.name" pEditableColumnField="name">
                 <p-cellEditor>
                     <ng-template #input>
                         <input
                             pInputText
                             type="text"
-                            [(ngModel)]="item.item" />
+                            [(ngModel)]="item.name" />
                     </ng-template>
                     <ng-template #output>
-                        {{ item.item }}
+                        {{ item.name }}
                     </ng-template>
                 </p-cellEditor>
             </td>
-            <td [pEditableColumn]="item.qty" pEditableColumnField="quantity">
+            <td [pEditableColumn]="item.quantity" pEditableColumnField="quantity">
                 <p-cellEditor>
                     <ng-template #input>
                         <input
                             pInputText
                             type="text"
-                            [(ngModel)]="item.qty"
+                            [(ngModel)]="item.quantity"
                             required />
                     </ng-template>
                     <ng-template #output>
-                        {{ item.qty }}
+                        {{ item.quantity }}
                     </ng-template>
                 </p-cellEditor>
             </td>
