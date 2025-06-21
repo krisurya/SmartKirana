@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
+import { Table } from 'primeng/table';
 
 @Component({
   standalone: true,
@@ -17,6 +18,10 @@ import { MessageService } from 'primeng/api';
 export class SpeechEditorCellComponent {
   @Input() model: string = '';
   @Input() language: string = 'hi-IN';
+  
+  @Input() row: any;
+  @Input() table?: Table;
+  
   @Output() modelChange = new EventEmitter<string>();
   @Output() started = new EventEmitter<any>();
   @Output() completed = new EventEmitter<any>();
@@ -46,6 +51,9 @@ export class SpeechEditorCellComponent {
       this.modelChange.emit(this.model);
       this.completed.emit(); // ➕ ensure editor is updated
       this.isListening = false;
+      if (this.table && this.row) {
+        this.table.initRowEdit(this.row);
+      }
     };
 
     recognition.onerror = (event: any) => {

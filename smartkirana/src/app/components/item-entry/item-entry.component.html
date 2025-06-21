@@ -1,4 +1,5 @@
 <p-table
+#table
 [value]="formArray.controls"
 [paginator]="true"
 [rows]="10"
@@ -23,32 +24,25 @@ currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
 <ng-template pTemplate="body" let-row let-i="rowIndex">
     <tr>
         <td class="col-id">{{ row.get('itemId')?.value }}</td>
-        <td class="col-hindi"><input pInputText [formControl]="row.get('itemHindi')" lang="hi" placeholder="यहाँ हिंदी में टाइप करें" /></td>
-        <td class="col-english"><input pInputText [formControl]="row.get('itemEnglish')" /></td>
+        <td class="col-hindi">
+            <app-speech-editor-cell [(model)]="row.name" [row]="row" [table]="table"></app-speech-editor-cell>
+        </td>
+        <td class="col-english">
+            <app-speech-editor-cell [language]="'en-IN'" [model]="getFormValue(row, 'itemEnglish')" (modelChange)="setFormValue(row, 'itemEnglish', $event)" ></app-speech-editor-cell>
+        </td>
         <td class="col-aliases">
-            <!-- <p-multiSelect
-            [options]="allAliases"
-            [formControl]="row.get('aliases')"
-            [maxSelectedLabels]="7"
-            display="chip"
-            appendTo="body"
-            scrollHeight="200px"
-            [filter]="true"
-            (onFilter)="onAliasFilter($event, i)"
-            (onBlur)="onAliasBlur(i)"
-            ></p-multiSelect> -->
             <p-autoComplete
-[suggestions]="filteredAliases"
-[formControl]="row.get('aliases')"
-[multiple]="true"
-[dropdown]="true"
-[forceSelection]="false"
-[placeholder]="'Select or add aliases'"
-(completeMethod)="filterAliases($event)"
-(onBlur)="normalizeAliases(i)"
-scrollHeight="200px"
-appendTo="body"
-></p-autoComplete>
+                [suggestions]="filteredAliases"
+                [formControl]="row.get('aliases')"
+                [multiple]="true"
+                [dropdown]="true"
+                [forceSelection]="false"
+                [placeholder]="'Select or add aliases'"
+                (completeMethod)="filterAliases($event)"
+                (onBlur)="normalizeAliases(i)"
+                scrollHeight="200px"
+                appendTo="body"
+            ></p-autoComplete>
         </td>
         <td class="col-price"><input type="number" pInputText [formControl]="row.get('price')" /></td>
         <td class="col-unit">

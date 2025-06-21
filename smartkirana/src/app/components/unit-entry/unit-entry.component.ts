@@ -1,21 +1,16 @@
 import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { v4 as uuidv4 } from 'uuid';
-import { firstValueFrom } from 'rxjs';
 
 import {
   Firestore,
   collection,
-  collectionData,
-  query,
-  orderBy,
   addDoc,
   updateDoc,
   doc,
   serverTimestamp,
-  where
 } from '@angular/fire/firestore';
 
 import { TableModule } from 'primeng/table';
@@ -24,6 +19,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
 import { FirestoreService } from '../../services/firestore.service';
 import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-cell.component';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { SpeechMultiAutocompleteComponent } from '../speech-multi-autocomplete/speech-multi-autocomplete.component';
 
 @Component({
   selector: 'app-unit-entry',
@@ -36,7 +33,9 @@ import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-c
     InputTextModule,
     MultiSelectModule,
     ButtonModule,
-    SpeechEditorCellComponent
+    AutoCompleteModule,
+    SpeechEditorCellComponent,
+    SpeechMultiAutocompleteComponent
   ],
   templateUrl: './unit-entry.component.html',
   styleUrls: ['./unit-entry.component.scss']
@@ -50,6 +49,7 @@ formArray = this.fb.array<FormGroup>([]);
   loading = signal(false);
   allAliases = ['किलो', 'kg', 'kgs', 'kilogram', 'किलोग्राम', 'लीटर', 'ltr', 'ml', 'पीस', 'unit'];
   mappedAllAliases: { label: string; value: string; }[] = [];
+  filteredAliases: string[] = [];
 
   async ngOnInit() {
     this.mappedAllAliases = this.allAliases.map(a => ({ label: a, value: a }));
@@ -176,11 +176,11 @@ formArray = this.fb.array<FormGroup>([]);
     // await deleteDoc(docRef); // Uncomment this to perform hard delete
   }
  
-  getFormValue(row: FormGroup, key: string): string {
-    return row.get(key)?.value || '';
+  getFormValue<T>(row: FormGroup, key: string): T {
+    return row.get(key)?.value as T;
   }
 
-  setFormValue(row: FormGroup, key: string, value: string) {
+  setFormValue<T>(row: FormGroup, key: string, value: T): void {
     const control = row.get(key);
     control?.setValue(value);
     control?.markAsDirty();

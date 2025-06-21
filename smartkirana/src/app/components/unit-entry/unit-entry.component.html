@@ -29,13 +29,34 @@
           ></app-speech-editor-cell>
         </td>
         <td style="min-width: 250px;">
-          <p-multiSelect
+          <!-- <p-multiSelect
             [options]="mappedAllAliases"
             [formControl]="row.get('aliases')" 
             display="chip"
             appendTo="body"
             scrollHeight="200px"
-          ></p-multiSelect>
+          ></p-multiSelect> -->
+          <!-- <p-autoComplete
+            [suggestions]="filteredAliases"
+            [formControl]="row.get('aliases')"
+            [multiple]="true"
+            [dropdown]="true"
+            [forceSelection]="false"
+            [placeholder]="'Select or add aliases'"
+            (completeMethod)="filterAliases($event)"
+            (onBlur)="normalizeAliases(i)"
+            scrollHeight="200px"
+            appendTo="body"
+          /> -->
+          <app-speech-multi-autocomplete
+            [model]="getFormValue(row, 'aliases')"
+            (modelChange)="setFormValue(row, 'aliases', $event)"
+            [suggestions]="allAliases"
+            placeholder="Select or add aliases"
+            scrollHeight="200px"
+            appendTo="body"
+            language="hi-IN"
+          />
         </td>
         <td>
           <button pButton type="button" label="Delete" severity="danger" icon="pi pi-trash" (click)="markDeleted(i)"></button>

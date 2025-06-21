@@ -28,6 +28,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { FirestoreService } from '../../services/firestore.service';
+import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-cell.component';
 
 @Component({
   selector: 'app-item-entry',
@@ -41,7 +42,8 @@ import { FirestoreService } from '../../services/firestore.service';
     DropdownModule,
     MultiSelectModule,
     AutoCompleteModule ,
-    ButtonModule
+    ButtonModule,
+    SpeechEditorCellComponent
   ],
   templateUrl: './item-entry.component.html',
   styleUrls: ['./item-entry.component.scss']
@@ -240,4 +242,13 @@ export class ItemEntryComponent implements OnInit {
     return this.formArray.at(rowIndex).get(field) as FormControl;
   }
   
+  getFormValue<T>(row: FormGroup, key: string): T {
+    return row.get(key)?.value as T;
+  }
+
+  setFormValue<T>(row: FormGroup, key: string, value: T): void {
+    const control = row.get(key);
+    control?.setValue(value);
+    control?.markAsDirty();
+  }
 }

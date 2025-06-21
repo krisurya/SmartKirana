@@ -1,0 +1,25 @@
+<div class="multi-autocomplete-with-mic">
+  <p-autoComplete
+    [(ngModel)]="model"
+    [suggestions]="filtered"
+    (completeMethod)="filter($event)"
+    (onSelect)="addIfNotPresent($event)"
+    (onBlur)="addTypedValue()"
+    (keydown.enter)="addTypedValue()"
+    (keydown.tab)="addTypedValue()"
+    [multiple]="true"
+    [dropdown]="true"
+    [forceSelection]="false"
+    [placeholder]="placeholder"
+    scrollHeight="200px"
+    appendTo="body"
+  ></p-autoComplete>
+
+  <button
+    type="button"
+    pButton
+    icon="pi pi-microphone"
+    class="mic-button"
+    (click)="startSpeech()"
+  ></button>
+</div>

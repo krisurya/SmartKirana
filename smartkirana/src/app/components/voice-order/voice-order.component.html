@@ -40,11 +40,7 @@
             <td [pEditableColumn]="row.name" pEditableColumnField="name" *ngIf="!row.deleted">
                 <p-cellEditor #cellEditor>
                     <ng-template pTemplate="input">
-                        <app-speech-editor-cell
-                            [(model)]="row.name"
-                            (started)="activateEdit(row)"
-                            (completed)="activateEdit(row)"
-                        ></app-speech-editor-cell>
+                        <app-speech-editor-cell [(model)]="row.name" [row]="row" [table]="table" ></app-speech-editor-cell>
                     </ng-template>
                     <ng-template pTemplate="output">
                     {{ row.name }}
@@ -82,6 +78,8 @@
                             (completeMethod)="filterUnits($event)"
                             [field]="'label'"
                             [dropdown]="true"
+                            appendTo="body"
+                            scrollHeight="200px"
                             placeholder="Select Unit"
                             class="w-full"
                         ></p-autoComplete>
