@@ -1,14 +1,22 @@
 .editor-with-mic {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
+  width: 100%;
 }
 
 .editor-input {
-  flex: 1;
+  width: 100%;
+  padding-right: 2.5rem; /* space for mic button */
+  box-sizing: border-box;
 }
 
-.mic-button {
-  width: 2.2rem;
-  height: 2.2rem;
+.mic-button-inside {
+    position: absolute;
+    top: 45%;
+    right: 1.2rem;
+    transform: translateY(-50%);
+    height: 1.6rem;
+    width: 1.6rem;
+    padding: 0;
+    border: none;
+    z-index: 1;
 }

@@ -13,8 +13,14 @@
     [disabled]="isListening"
     [icon]="isListening ? 'pi pi-spin pi-spinner' : 'pi pi-microphone'"
     (click)="startRecognition()"
-    class="mic-button"
+    class="mic-button-inside"
   ></button>
+  
+  <!-- <app-speech-mic-button
+    class="mic-button-inside"
+    (transcript)="model = $event; modelChange.emit(model)"
+    [language]="language"
+  ></app-speech-mic-button> -->
 
   <p-toast></p-toast>
 </div>

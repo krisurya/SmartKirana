@@ -25,7 +25,7 @@ currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
     <tr>
         <td class="col-id">{{ row.get('itemId')?.value }}</td>
         <td class="col-hindi">
-            <app-speech-editor-cell [(model)]="row.name" [row]="row" [table]="table"></app-speech-editor-cell>
+            <app-speech-editor-cell [model]="getFormValue(row, 'itemHindi')" (modelChange)="setFormValue(row, 'itemHindi', $event)" ></app-speech-editor-cell>
         </td>
         <td class="col-english">
             <app-speech-editor-cell [language]="'en-IN'" [model]="getFormValue(row, 'itemEnglish')" (modelChange)="setFormValue(row, 'itemEnglish', $event)" ></app-speech-editor-cell>
@@ -43,6 +43,26 @@ currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
                 scrollHeight="200px"
                 appendTo="body"
             ></p-autoComplete>
+
+            <!-- <div class="editor-with-mic">
+                <p-autoComplete
+                    [suggestions]="filteredAliases"
+                    [formControl]="row.get('aliases')"
+                    [multiple]="true"
+                    [dropdown]="true"
+                    [forceSelection]="false"
+                    [placeholder]="'Select or add aliases'"
+                    (completeMethod)="filterAliases($event)"
+                    (onBlur)="normalizeAliases(i)"
+                    scrollHeight="200px"
+                    appendTo="body"
+                ></p-autoComplete>
+                <app-speech-mic-button
+                    class="mic-button-inside"
+                    (transcript)="addAliasFromSpeech(row, $event)"
+                    [language]="language"
+                ></app-speech-mic-button>
+            </div> -->
         </td>
         <td class="col-price"><input type="number" pInputText [formControl]="row.get('price')" /></td>
         <td class="col-unit">

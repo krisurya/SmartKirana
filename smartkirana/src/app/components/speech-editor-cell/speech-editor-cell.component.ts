@@ -39,29 +39,57 @@ export class SpeechEditorCellComponent {
 
     const recognition = new SpeechRecognition();
     recognition.lang = this.language;
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
+    recognition.continuous = false; // Required for manual silence control
 
-    this.started.emit(this.model); // ➕ tell editor to stay open
+    this.started.emit(this.model);
     this.isListening = true;
 
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript.trim();
-      this.model = transcript;
+    let silenceTimer: any;
+    let lastTranscript = '';
+
+    // Reset 2s silence timer
+    const resetSilenceTimer = () => {
+      if (silenceTimer) clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        finishRecognition(lastTranscript);
+      }, 300);
+    };
+
+    const finishRecognition = (finalText: string) => {
+      recognition.abort(); // stop listening
+      this.model = finalText.trim();
       this.modelChange.emit(this.model);
-      this.completed.emit(); // ➕ ensure editor is updated
+      this.completed.emit();
       this.isListening = false;
+
       if (this.table && this.row) {
         this.table.initRowEdit(this.row);
       }
     };
 
+    recognition.onresult = (event: any) => {
+      let combinedTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        combinedTranscript += result[0].transcript;
+      }
+
+      lastTranscript = combinedTranscript;
+      this.model = combinedTranscript.trim();
+
+      resetSilenceTimer(); // Every time we get new result, reset the silence wait
+    };
+
     recognition.onerror = (event: any) => {
+      clearTimeout(silenceTimer);
       this.toast.add({ severity: 'error', summary: 'Speech Error', detail: event.error });
       this.isListening = false;
     };
 
     recognition.onend = () => {
+      clearTimeout(silenceTimer);
       this.isListening = false;
     };
 

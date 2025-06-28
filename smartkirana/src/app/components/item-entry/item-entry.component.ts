@@ -49,6 +49,8 @@ import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-c
   styleUrls: ['./item-entry.component.scss']
 })
 export class ItemEntryComponent implements OnInit {
+  // model: string = '';
+  // language: string = 'hi-IN';
   private fb = inject(FormBuilder);
   private db = inject(Firestore);
   private firestoreService = inject(FirestoreService);
@@ -58,6 +60,10 @@ export class ItemEntryComponent implements OnInit {
   unitOptions: { id:any, label: any; value: any; }[] = [];
   allAliases = ['दाल','अरहर','तोवर','मूंग','मूंग दाल','मूँग दाल','हरी दाल','हरी मूंग','मूंगी दाल','साबुत मूंग','छिलकी मूंग','दूध','पानी'];
   filteredAliases: string[] = [];
+
+  // onManualChange(value: string) {
+  //   // this.modelChange.emit(value);
+  // }
 
   async ngOnInit() {
     this.loading.set(true);
@@ -75,7 +81,7 @@ export class ItemEntryComponent implements OnInit {
       itemEnglish: [item?.english || '', Validators.required],
       price:       [item?.price || 0, [Validators.required, Validators.min(1)]],
       unitType:    [item?.unitType || [], Validators.required],
-      aliases:     [item?.aliases || [], Validators.required],
+      aliases:     [item?.aliases || []],
       createdAt:   [item?.createdAt || null],
       updatedAt:   [item?.updatedAt || null],
       deleted:     [false]  // NEW: to track soft delete
@@ -125,7 +131,8 @@ export class ItemEntryComponent implements OnInit {
 
   get canSaveAll(): boolean {
     const ctrls = this.formArray.controls as FormGroup[];
-    const newValid = ctrls[0]?.get('deleted')?.value === false && ctrls[0]?.valid;
+    const newRow = ctrls[0];
+    const newValid = newRow?.valid && !newRow.get('deleted')?.value;
 
     const editedValid = ctrls.slice(1).some(ctrl =>
       !ctrl.get('deleted')?.value && ctrl.dirty && ctrl.valid
@@ -136,6 +143,10 @@ export class ItemEntryComponent implements OnInit {
     return newValid || editedValid || hasDeleted;
   }
 
+  onFieldChange(rowIndex: number, field: string) {
+    const ctrl = this.formArray.at(rowIndex) as FormGroup;
+    ctrl.get(field)?.markAsDirty();
+  }
   async saveAll() {
     const ctrls = this.formArray.controls as FormGroup[];
 
@@ -248,7 +259,33 @@ export class ItemEntryComponent implements OnInit {
 
   setFormValue<T>(row: FormGroup, key: string, value: T): void {
     const control = row.get(key);
+    console.log(`[setFormValue] key: ${key}, value: ${value}, dirty: ${control?.dirty}`);
     control?.setValue(value);
     control?.markAsDirty();
+    console.log(`[setFormValue] key: ${key}, value: ${value}, dirty: ${control?.dirty}`);
   }
+
+  // addAliasFromSpeech(row: FormGroup, spokenValue: string): void {
+  //   const aliasesArray = row.get('aliases') as FormArray;
+  //   if (!aliasesArray) return;
+
+  //   const normalizedSpoken = this.normalizeText(spokenValue);
+
+  //   const exists = aliasesArray.controls.some(ctrl =>
+  //     this.normalizeText(ctrl.value) === normalizedSpoken
+  //   );
+
+  //   if (!exists && normalizedSpoken) {
+  //     aliasesArray.push(new FormControl(spokenValue.trim()));
+  //     aliasesArray.markAsDirty();
+  //   }
+  // }
+
+  // private normalizeText(text: string): string {
+  //   return text.normalize("NFD") // split accented characters
+  //             .replace(/[\u0300-\u036f]/g, "") // remove accents/diacritics
+  //             .trim()
+  //             .toLowerCase();
+  // }
+
 }

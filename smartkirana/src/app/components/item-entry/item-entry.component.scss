@@ -12,19 +12,19 @@
 
 /* Minimum widths for each column */
 :host ::ng-deep th.col-id,
-:host ::ng-deep td.col-id { min-width: 80px; }
+:host ::ng-deep td.col-id { min-width: 70px; }
 
 :host ::ng-deep th.col-hindi,
-:host ::ng-deep td.col-hindi { min-width: 120px; }
+:host ::ng-deep td.col-hindi { min-width: 250px; }
 
 :host ::ng-deep th.col-english,
-:host ::ng-deep td.col-english { min-width: 120px; }
+:host ::ng-deep td.col-english { min-width: 250px; }
 
 :host ::ng-deep th.col-price,
-:host ::ng-deep td.col-price { min-width: 80px; }
+:host ::ng-deep td.col-price { min-width: 150px; }
 
 :host ::ng-deep th.col-unit,
-:host ::ng-deep td.col-unit { min-width: 350px; }
+:host ::ng-deep td.col-unit { min-width: 200px; }
 
 :host ::ng-deep th.col-aliases,
 :host ::ng-deep td.col-aliases { min-width: 350px; }
@@ -62,3 +62,21 @@
   opacity: 0.6;
   pointer-events: none;
 }
+
+// .editor-with-mic {
+//   position: relative;
+//   // add padding inside input container
+//   ::ng-deep .p-autocomplete-multiple-container {
+//     padding-right: 2.5rem !important;
+//   }
+// }
+
+// .mic-button-inside {
+//   top: 50% !important;
+//   right: 0.4rem;
+//   transform: translateY(-50%);
+//   height: 2rem;
+//   width: 2rem;
+//   padding: 0;
+//   z-index: 10;
+// }

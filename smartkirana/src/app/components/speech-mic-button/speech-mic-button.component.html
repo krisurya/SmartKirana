@@ -1,0 +1,10 @@
+<button
+  type="button"
+  pButton
+  class="mic-button"
+  [disabled]="isListening"
+  [icon]="isListening ? 'pi pi-spin pi-spinner' : 'pi pi-microphone'"
+  (click)="startRecognition()"
+></button>
+
+<p-toast></p-toast>
