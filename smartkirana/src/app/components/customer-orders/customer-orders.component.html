@@ -1,0 +1,86 @@
+<div *ngIf="totalRemaining > 0" style="color: red; font-weight: bold; margin-bottom: 10px; font-size: 14px;">
+  🔔 कुल बकाया (Total Due): ₹{{ totalRemaining | number:'1.0-2' }}
+</div>
+
+<p-table
+  [value]="orders"
+  [paginator]="true"
+  [rows]="10"
+  [sortField]="'createdAt'"
+  [sortOrder]="-1"
+  [globalFilterFields]="['id', 'paymentMode', 'customer.name', 'customer.phone']"
+  [responsiveLayout]="'scroll'"
+  selectionMode="single"
+  (onRowSelect)="showOrderDetails($event.data)"
+  dataKey="id"
+  styleClass="p-datatable-sm"
+  #table
+>
+  <ng-template pTemplate="caption">
+    <div class="table-header">
+      <h3>🧾 Orders for {{ phone }}</h3>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <!-- <input
+  pInputText
+  type="text"
+  placeholder="Search orders..."
+  (input)="table.filterGlobal(($event.target as HTMLInputElement).value, 'contains'))" /> -->
+      </span>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="createdAt">Date & Time <p-sortIcon field="createdAt" /></th>
+      <th>Items</th>
+      <th pSortableColumn="total">Total ₹ <p-sortIcon field="total" /></th>
+      <th pSortableColumn="paymentMode">Payment Mode <p-sortIcon field="paymentMode" /></th>
+      <th>Paid</th>
+      <th>Remaining</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-order>
+    <tr [pSelectableRow]="order">
+      <td>{{ formatDate(order.createdAt) }}</td>
+      <td>
+        <div *ngFor="let item of order.items?.validItems" style="font-size: 11px;">
+        {{ item.canonical }} - {{ item.quantity }} {{ item.unitTypes }}
+        </div>
+      </td>
+      <td>₹{{ order.totalAmount | number:'1.0-2' }}</td>
+      <td>{{ order.paymentMode | titlecase }}</td>
+      <td>₹{{ order.paidAmount }}</td>
+      <td [ngStyle]="{ color: order.remainingAmount > 0 ? 'red' : 'inherit', fontWeight: order.remainingAmount > 0 ? 'bold' : 'normal' }">
+        ₹{{ order.remainingAmount || 0 }}
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="orderDialogVisible"
+  [modal]="true"
+  [header]="'🧾 Order Details - ' + selectedOrder?.id"
+  [style]="{ width: '500px' }"
+  [dismissableMask]="true"
+  [closable]="true"
+  [breakpoints]="{ '960px': '95vw' }"
+>
+  <div *ngIf="selectedOrder">
+    <p><strong>Phone:</strong> {{ selectedOrder.customerId }}</p>
+    <p><strong>Date:</strong> {{ formatDate(selectedOrder.createdAt) }}</p>
+    <p><strong>Payment Mode:</strong> {{ selectedOrder.paymentMode | titlecase }}</p>
+    <p><strong>Paid:</strong> ₹{{ selectedOrder.paidAmount }}</p>
+    <p><strong>Remaining:</strong> ₹{{ selectedOrder.remainingAmount }}</p>
+    <p><strong>Total:</strong> ₹{{ selectedOrder.total }}</p>
+
+    <h4>🧺 Items</h4>
+    <ul>
+      <li *ngFor="let item of selectedOrder.items">
+        {{ item.canonical }} - {{ item.quantity }} {{ item.unit }} ₹{{ item.price }} = ₹{{ item.quantity * item.price }}
+      </li>
+    </ul>
+  </div>
+</p-dialog>

@@ -27,6 +27,7 @@ import { SpeechEditorCellComponent } from './components/speech-editor-cell/speec
 import { CustomerAutocompleteComponent } from './components/app-customer-autocomplete/app-customer-autocomplete.component';
 import { GlobalLoaderComponent } from './components/global-loader/global-loader.component';
 import { MessageService } from 'primeng/api';
+import { CustomerOrdersComponent } from './components/customer-orders/customer-orders.component';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -65,6 +66,7 @@ export const appConfig: ApplicationConfig = {
           { path: 'items', component: ItemEntryComponent },
           { path: 'units', component: UnitEntryComponent },
           { path: 'voice-order', component: VoiceOrderComponent },
+          { path: 'customer-orders', component: CustomerOrdersComponent },
           { path: 'customers', component: CustomersComponent },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]

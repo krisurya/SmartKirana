@@ -12,7 +12,7 @@ import { PrintSlipComponent } from '../print-slip/print-slip.component';
 import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-cell.component';
 import { FirestoreService } from '../../services/firestore.service';
 import { AutoComplete } from 'primeng/autocomplete';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { addDoc, collection, Firestore, Timestamp } from '@angular/fire/firestore';
 import { LoaderService } from '../../services/loader.service';
 import { GlobalToastService } from '../../services/toast.service';
@@ -74,6 +74,7 @@ export class VoiceOrderComponent {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private speechService: SpeechService,
     private orderParser: OrderParserService,
     private loader: LoaderService,
@@ -233,8 +234,13 @@ export class VoiceOrderComponent {
         const total = this.calculatedTotal;
         const paid = this.paidAmount;
         const remaining = total - paid;
+        const totalAmount = this.validOrder.reduce((sum, item) => sum + (item.price * (item.quantity ?? 1)), 0);
         const order = {
-        customerId: this.customerPhone,
+        customer: {
+          name: this.selectedCustomer.name,
+          phone: this.selectedCustomer.phone
+        },
+        customerId: this.selectedCustomer.phone,
         items: {
             validItems: this.validOrder.map(item => ({
                           id: item.id,
@@ -255,16 +261,18 @@ export class VoiceOrderComponent {
         },
         recognizedText: this.recognizedText,
         audioUrl: this.audioUrl || null,
-        totalAmount: this.validOrder.reduce((sum, item) => sum + (item.price * (item.quantity ?? 1)), 0),
+        totalAmount: totalAmount,
         totalQuantity: this.validOrder.reduce((sum, item) => sum + (item.quantity ?? 1), 0),
         status: 'done',
         paymentStatus: remaining === 0 ? 'paid' : (paid > 0 ? 'partial' : 'unpaid'),
+        paymentMode: this.paymentMode,
+        paidAmount: paid,
+        remainingAmount: remaining,
         paymentHistory: [{
           amount: paid,
           mode: 'cash', // or dynamic
           time: new Date().toISOString()
         }],
-        remainingPayment: remaining,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       };
@@ -281,6 +289,14 @@ export class VoiceOrderComponent {
 
       this.loader.hide();
       throw err;
+    }
+  }
+
+  goToCustomerOrders() {
+    if (this.selectedCustomer?.phone) {
+      this.router.navigate(['/customer-orders'], {
+        queryParams: { phone: this.selectedCustomer.phone }
+      });
     }
   }
 }
