@@ -4,14 +4,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { Table } from 'primeng/table';
+import { GlobalToastService } from '../../services/toast.service';
 
 @Component({
   standalone: true,
   selector: 'app-speech-editor-cell',
   imports: [CommonModule, FormsModule, InputTextModule, ButtonModule, ToastModule],
-  providers: [MessageService],
   templateUrl: './speech-editor-cell.component.html',
   styleUrls: ['./speech-editor-cell.component.scss'],
 })
@@ -28,12 +27,12 @@ export class SpeechEditorCellComponent {
 
   isListening = false;
 
-  constructor(private toast: MessageService) {}
+  constructor(private toastService: GlobalToastService) {}
 
   startRecognition(): void {
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (!SpeechRecognition) {
-      this.toast.add({ severity: 'error', summary: 'Unsupported', detail: 'Speech recognition not supported.' });
+      this.toastService.warn('Unsupported', 'Speech recognition not supported');
       return;
     }
 
@@ -84,7 +83,7 @@ export class SpeechEditorCellComponent {
 
     recognition.onerror = (event: any) => {
       clearTimeout(silenceTimer);
-      this.toast.add({ severity: 'error', summary: 'Speech Error', detail: event.error });
+      this.toastService.warn('Speech Error', event.error);
       this.isListening = false;
     };
 

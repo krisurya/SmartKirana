@@ -8,14 +8,23 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { OrderItem } from '../../models/api-response';
-import { SpeechRecorderComponent } from '../speech-recorder/speech-recorder.component';
 import { PrintSlipComponent } from '../print-slip/print-slip.component';
 import { SpeechEditorCellComponent } from '../speech-editor-cell/speech-editor-cell.component';
 import { FirestoreService } from '../../services/firestore.service';
 import { AutoComplete } from 'primeng/autocomplete';
+import { ActivatedRoute } from '@angular/router';
+import { addDoc, collection, Firestore, Timestamp } from '@angular/fire/firestore';
+import { LoaderService } from '../../services/loader.service';
+import { GlobalToastService } from '../../services/toast.service';
+import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { CalendarModule } from 'primeng/calendar';
+import { CardModule } from 'primeng/card';
 
 interface ParsedItem {
-  name: string;
+  id: string,
+  canonical: string,
+  english: string,
   quantity: number;
   unit: string;
   price: number;
@@ -26,13 +35,14 @@ interface ParsedItem {
 
 @Component({
   standalone: true,
-  imports: [NgIf, CommonModule, TableModule, FormsModule, ButtonModule, DropdownModule, InputTextModule, 
-            SpeechRecorderComponent, PrintSlipComponent, SpeechEditorCellComponent, AutoComplete],
+  imports: [NgIf, CommonModule, TableModule, FormsModule, ButtonModule, DropdownModule, InputTextModule, PrintSlipComponent, 
+    SpeechEditorCellComponent, AutoComplete, ToastModule, DialogModule, CalendarModule, CardModule],
   selector: 'app-voice-order',
   templateUrl: './voice-order.component.html',
   styleUrls: ['./voice-order.component.scss']
 })
 export class VoiceOrderComponent {
+  private firestore = inject(Firestore);
   private fireStoreService = inject(FirestoreService);
 
   @ViewChild('table') table!: Table;
@@ -46,12 +56,30 @@ export class VoiceOrderComponent {
   unMatchedItems: any[] = [];
   filteredUnits: any[] = [];
   unitOptions: any[] = [];
+  customerPhone: any;
+  audioUrl: string = '';
 
+  // submit order
+  paymentDialogVisible = false;
+  paidAmount: number = 0;
+  remainingAmount: number = 0;
+  dueDateTime: Date | null = null;
+  paymentModes = [
+    { label: '💵 Cash', value: 'cash' },
+    { label: '🏦 UPI', value: 'upi' },
+    { label: '📄 Credit', value: 'credit' }
+  ];
+  paymentMode: string = 'cash';
+  selectedCustomer: { name: string; phone: string; };
 
   constructor(
+    private route: ActivatedRoute,
     private speechService: SpeechService,
-    private orderParser: OrderParserService
+    private orderParser: OrderParserService,
+    private loader: LoaderService,
+    private toastService: GlobalToastService
   ) {
+    this.selectedCustomer = {name: '', phone: ''};
     // 5 किलो अरहर दाल, मूंग दाल 3 किलो, चावल 5 किलो, साबूदाना 2 किलो, चना दाल 10 किलो, अजवाइन 100 ग्राम, अजवाइन प्रोग्राम, होता है या ग्राम होता है, होता है या ग्राम होता है अब इसमें जो वैलिड आइटम है ना सिर्फ उनकी रिसिप्ट बनकर आ रही है, जैसे देखो, रिफ्रेश पेज स्टोर
     const testText = "अरहर दाल 5 किलो 2 किलो मूंग दाल 5 लीटर दूध 5 किलो दूध, साबूदाना 10 किलो, चावल 5 किलो, दाल, हरी दाल, हरी दाल 3 किलो, चना दाल 4 किलो, उड़द दाल, मसूर 3 किलो, चावल 5 किलो, आटा 10 किलो, मैदा 2 किलो, चीनी 5 किलो, सेंधा नमक 2 किलो, चाय 2 किलो";
     this.processText(testText);
@@ -64,6 +92,14 @@ export class VoiceOrderComponent {
 
   async ngOnInit(){
     this.unitOptions = await this.fireStoreService.getAllPossibleUnits();
+    this.route.queryParams.subscribe(params => {
+      this.customerPhone = params['phone'];
+      if (this.customerPhone || this.customerPhone.length > 0) {
+        this.selectedCustomer = {name: this.customerPhone, phone: this.customerPhone};
+        debugger;
+        // optionally prefill customer or fetch details by phone
+      }
+    });
   }
 
   processText(text: string) {
@@ -74,7 +110,9 @@ export class VoiceOrderComponent {
         // this.validOrders.push(...parsedItems);
         this.parsedOrder.push(...res.order.unMatched.map((x) => { 
           const item: ParsedItem = {
-            name: x.text,
+            id: '',
+            canonical: x.text,
+            english: '',
             quantity: 0,
             unit: '',
             price: 0,
@@ -103,7 +141,9 @@ export class VoiceOrderComponent {
 
   mapParsedOrdersToUI(parsedOrders: OrderItem[]): ParsedItem[] {
     return parsedOrders.map((item): ParsedItem => ({
-      name: item.item.canonical,
+      id: item.item.id,
+      canonical: item.item.canonical,
+      english: item.item.english,
       quantity: item.qty,
       unit: item.unit.canonical,
       price: item.item.price,
@@ -138,7 +178,7 @@ export class VoiceOrderComponent {
 
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript.trim();
-      row.name = transcript;
+      row.canonical = transcript;
     };
 
     recognition.onerror = (event: any) => {
@@ -157,5 +197,90 @@ export class VoiceOrderComponent {
     this.filteredUnits = this.unitOptions.filter(unit =>
       unit.label.toLowerCase().includes(query)
     );
+  }
+
+  get calculatedTotal(): number {
+    return this.validOrder.reduce((sum, item) => sum + ((item.price * item.quantity) || 0), 0);
+  }
+
+  openPaymentDialog() {
+    const total = this.calculatedTotal;
+    this.paidAmount = total;
+    this.remainingAmount = 0;
+
+    if (this.customerPhone === '1234567890') {
+      this.dueDateTime = this.getFutureDate(7); // 7 days for specific customer
+    } else {
+      this.dueDateTime = this.getFutureDate(30); // default 1 month
+    }
+
+    this.paymentDialogVisible = true;
+  }
+
+  getFutureDate(days: number): Date {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  calculateRemaining() {
+    this.remainingAmount = Math.max(this.calculatedTotal - this.paidAmount, 0);
+  }
+
+  async saveVoiceOrder() {
+    this.loader.show();
+    try {
+        const total = this.calculatedTotal;
+        const paid = this.paidAmount;
+        const remaining = total - paid;
+        const order = {
+        customerId: this.customerPhone,
+        items: {
+            validItems: this.validOrder.map(item => ({
+                          id: item.id,
+                          canonical: item.canonical,
+                          english: item.english,
+                          price: item.price,
+                          unitTypes: item.unit,
+                          quantity: item.quantity ?? 1 // if quantity comes from UI
+                        })),
+            allItems: this.parsedOrder.map(item => ({
+                          id: item.id,
+                          canonical: item.canonical,
+                          english: item.english,
+                          price: item.price,
+                          unitTypes: item.unit,
+                          quantity: item.quantity ?? 1 // if quantity comes from UI
+                        }))
+        },
+        recognizedText: this.recognizedText,
+        audioUrl: this.audioUrl || null,
+        totalAmount: this.validOrder.reduce((sum, item) => sum + (item.price * (item.quantity ?? 1)), 0),
+        totalQuantity: this.validOrder.reduce((sum, item) => sum + (item.quantity ?? 1), 0),
+        status: 'done',
+        paymentStatus: remaining === 0 ? 'paid' : (paid > 0 ? 'partial' : 'unpaid'),
+        paymentHistory: [{
+          amount: paid,
+          mode: 'cash', // or dynamic
+          time: new Date().toISOString()
+        }],
+        remainingPayment: remaining,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      };
+
+      const ref = collection(this.firestore, 'orders');
+      const docRef = await addDoc(ref, order);
+      this.toastService.success('Order Saved', `Order ID: ${docRef.id}`);
+      this.loader.hide();
+      this.paymentDialogVisible = false;
+      return docRef.id;
+    } catch (err) {
+      console.error('Error saving order:', err);
+      this.toastService.error('Error', 'Failed to save order');
+
+      this.loader.hide();
+      throw err;
+    }
   }
 }

@@ -1,22 +1,136 @@
-.invalid-row {
-  background-color: red !important;
-  color: white !important;
-}
-.deleted-row {
-  background-color: #e0e0e0 !important;
-  color: #888 !important;
-}
-.editor-with-mic {
+.main-container {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-direction: row;
+  gap: 16px;
+  margin: 16px 0;
+  flex-wrap: wrap;
 }
 
-.editor-input {
-  flex: 1;
+.sidebar {
+  width: 30%;
+  min-width: 280px;
+  background-color: #f0f0f0;
+  padding: 16px;
+  border: 1px solid #ccc;
 }
 
-.mic-button {
-  width: 2rem;
-  height: 2rem;
+.content {
+  width: 70%;
+  min-width: 300px;
+  background-color: #e8f4ff;
+  padding: 16px;
+  border: 1px solid #ccc;
+}
+
+/* Responsive for small screens */
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+
+  .sidebar,
+  .content {
+    width: 100%;
+  }
+}
+
+
+.voice-order-wrapper {
+  max-width: 90%;
+  margin: auto;
+}
+
+.voice-control-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.status-badge {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: #e9ecef;
+  color: #555;
+}
+
+.status-badge.active {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.order-table-card {
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+}
+
+.custom-table .p-datatable-tbody > tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.preview-section {
+  border-top: 1px solid #ccc;
+  padding-top: 1rem;
+}
+
+.deleted-row {
+  background-color: #f2f2f2 !important;
+  color: #888 !important;
+  font-style: italic;
+}
+.preview-section,
+.order-table-card {
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+@media screen and (max-width: 768px) {
+  .custom-table .p-datatable-wrapper {
+    overflow-x: auto;
+  }
+}
+
+.preview-section {
+  background-color: #f9f9f9;
+}
+.order-table-card {
+  background-color: #ffffff;
+}
+/* Dialog Layout */
+::ng-deep .p-dialog .p-fluid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+::ng-deep .p-dialog .p-field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Label Styling */
+::ng-deep .p-dialog label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #333;
+}
+
+/* Input/Dropdown/Calendar Width */
+::ng-deep .p-dialog input,
+::ng-deep .p-dialog .p-inputtext,
+::ng-deep .p-dialog .p-dropdown,
+::ng-deep .p-dialog .p-calendar {
+  width: 100%;
+  border-radius: 6px;
+}
+
+/* Footer Alignment */
+::ng-deep .p-dialog .p-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+/* Dialog Appearance */
+::ng-deep .p-dialog {
+  border-radius: 10px;
 }

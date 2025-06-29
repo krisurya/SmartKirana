@@ -1,15 +1,14 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { ToastModule } from "primeng/toast";
+import { GlobalToastService } from "../../services/toast.service";
 
 @Component({
   selector: 'app-speech-mic-button',
   standalone: true,
   templateUrl: './speech-mic-button.component.html',
   styleUrls: ['./speech-mic-button.component.scss'],
-  imports: [ButtonModule, ToastModule],
-  providers: [MessageService],
+  imports: [ButtonModule, ToastModule]
 })
 export class SpeechMicButtonComponent {
   @Input() language = 'hi-IN';
@@ -19,12 +18,12 @@ export class SpeechMicButtonComponent {
 
   isListening = false;
 
-  constructor(private toast: MessageService) {}
+  constructor(private toastService: GlobalToastService) {}
 
   startRecognition(): void {
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (!SpeechRecognition) {
-      this.toast.add({ severity: 'error', summary: 'Unsupported', detail: 'Speech recognition not supported.' });
+      this.toastService.warn('Unsupported', 'Speech recognition not supported');
       return;
     }
 

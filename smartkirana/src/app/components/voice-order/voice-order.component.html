@@ -1,130 +1,218 @@
-<div class="voice-container">
-  <h2>🎙️ Voice Order</h2>
-  <button (click)="startListening()" [disabled]="isListening">Start Listening</button>
-  <button (click)="stopListening()" [disabled]="!isListening">Stop</button>
+<div class="voice-order-wrapper p-4">
+    <!-- Voice Control Card -->
+    <p-card class="voice-control-card mb-4" header="🎙️ Voice Order">
+        <div class="flex align-items-center gap-3">
+        <button pButton icon="pi pi-microphone" label="Start Listening" class="p-button-rounded p-button-primary"
+            [disabled]="isListening" (click)="startListening()"></button>
+        <button pButton icon="pi pi-stop" label="Stop" class="p-button-rounded p-button-danger"
+            [disabled]="!isListening" (click)="stopListening()"></button>
+        <span class="status-badge" [ngClass]="{ 'active': isListening }">{{ isListening ? 'Listening...' : 'Not Listening' }}</span>
+        </div>
 
-  <app-speech-recorder></app-speech-recorder>
-  <div *ngIf="recognizedText">
-    <h3>Recognized:</h3>
-    <p>{{ recognizedText }}</p>
-  </div>
-</div>
+        <div *ngIf="recognizedText" class="recognized-text mt-3">
+        <h4>📝 Recognized</h4>
+        <p class="text-gray-700">{{ recognizedText }}</p>
+        </div>
+    </p-card>
 
-<!-- [rowStyleClass]="getRowClass"  -->
-<p-table #table [value]="parsedOrder" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
-    <ng-template #header>
-        <tr>
-            <th style="width:40%">
-                Name
-            </th>
-            <th style="width:5%">
-                Quantity
-            </th>
-            <th style="width:8%">
-                Unit
-            </th>
-            <th style="width:10%">
-                Price
-            </th>
-            <th style="width:30%">
-                Audio 
-            </th>
-            <th style="width:10%">
-                Action 
-            </th>
-        </tr>
+    <!-- <div class="main-container">
+        <div class="sidebar">
+        </div>
+        <div class="content">
+        </div>
+    </div> -->
+
+    <div class="p-grid p-nogutter p-pt-3 p-px-3">
+        <!-- Order Preview: appears first on small screens, second on large -->
+        <div class="p-col-12 p-md-5 p-order-1 p-md-order-2">
+            <p-card header="🧾 Preview Order" class="preview-section">
+                <!-- Order Preview -->
+                <div *ngIf="validOrder.length > 0" class="preview-section mb-4">
+                    <h3 class="text-green-700">✅ Preview Order</h3>
+                    <button pButton type="button" label="Submit Order" class="p-button-success mb-2" (click)="openPaymentDialog()"></button>
+                    <div class="p-grid p-nogutter p-pt-3 p-px-3">
+                        <!-- Worker Slip (no payment info) -->
+                        <div class="p-col-12 p-md-6">
+                            <p-card header="📦 Worker Copy">
+                            <app-print-slip
+                                [items]="validOrder"
+                                [customer]="selectedCustomer"
+                                [workerVersion]="true"
+                            ></app-print-slip>
+                            </p-card>
+                        </div>
+
+                        <!-- Full Slip (with payment) -->
+                        <div class="p-col-12 p-md-6">
+                            <p-card header="🧾 Customer Copy">
+                            <app-print-slip
+                                [items]="validOrder"
+                                [paidAmount]="paidAmount"
+                                [remainingAmount]="remainingAmount"
+                                [paymentMode]="paymentMode"
+                                [customer]="selectedCustomer"
+                                [workerVersion]="false"
+                            ></app-print-slip>
+                            </p-card>
+                        </div>
+                    </div>
+                </div>
+            </p-card>
+        </div>  
+        <div class="p-col-12 p-md-7 p-order-2 p-md-order-1">
+            <!-- Order Table -->
+            <p-card header="🛒 Order Table" class="order-table-card" *ngIf="parsedOrder?.length">
+                <p-table #table [value]="parsedOrder" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }" class="custom-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                        <th style="width: 40%">Name</th>
+                        <th style="width: 10%">Qty</th>
+                        <th style="width: 15%">Unit</th>
+                        <th style="width: 15%">Price</th>
+                        <th style="width: 15%">Audio</th>
+                        <th style="width: 10%">Action</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
+                        <tr [ngClass]="{ 'deleted-row': row.deleted }">
+
+                        <!-- Name -->
+                        <td *ngIf="!row.deleted" pEditableColumn>
+                            <p-cellEditor>
+                            <ng-template pTemplate="input">
+                                <app-speech-editor-cell [(model)]="row.canonical" [row]="row" [table]="table"></app-speech-editor-cell>
+                            </ng-template>
+                            <ng-template pTemplate="output">
+                                {{ row.canonical }}
+                            </ng-template>
+                            </p-cellEditor>
+                        </td>
+                        <td *ngIf="row.deleted">{{ row.canonical }}</td>
+
+                        <!-- Quantity -->
+                        <td *ngIf="!row.deleted" pEditableColumn>
+                            <p-cellEditor>
+                            <ng-template pTemplate="input">
+                                <input pInputText type="number" [(ngModel)]="row.quantity" required />
+                            </ng-template>
+                            <ng-template pTemplate="output">
+                                {{ row.quantity }}
+                            </ng-template>
+                            </p-cellEditor>
+                        </td>
+                        <td *ngIf="row.deleted">{{ row.quantity }}</td>
+
+                        <!-- Unit -->
+                        <td *ngIf="!row.deleted" pEditableColumn>
+                            <p-cellEditor>
+                            <ng-template pTemplate="input">
+                                <p-autoComplete
+                                [(ngModel)]="row.unit"
+                                [suggestions]="filteredUnits"
+                                (completeMethod)="filterUnits($event)"
+                                [field]="'label'"
+                                [dropdown]="true"
+                                scrollHeight="200px"
+                                placeholder="Select Unit"
+                                class="w-full"
+                                appendTo="body">
+                                </p-autoComplete>
+                            </ng-template>
+                            <ng-template pTemplate="output">
+                                {{ row.unit || 'Select Unit' }}
+                            </ng-template>
+                            </p-cellEditor>
+                        </td>
+                        <td *ngIf="row.deleted">{{ row.unit }}</td>
+
+                        <!-- Price -->
+                        <td *ngIf="!row.deleted" pEditableColumn>
+                            <p-cellEditor>
+                            <ng-template pTemplate="input">
+                                <input pInputText type="number" [(ngModel)]="row.price" />
+                            </ng-template>
+                            <ng-template pTemplate="output">
+                                <span *ngIf="row.price">
+                                {{ row.price * row.quantity }} ({{ row.price }} × {{ row.quantity }})
+                                </span>
+                                <span *ngIf="!row.price">XX</span>
+                            </ng-template>
+                            </p-cellEditor>
+                        </td>
+                        <td *ngIf="row.deleted">{{ row.price }}</td>
+
+                        <!-- Audio -->
+                        <td>
+                            🎵
+                            <!-- You can enhance this with actual audio controls later -->
+                        </td>
+
+                        <!-- Action -->
+                        <td>
+                            <button pButton type="button"
+                            [label]="row.deleted ? 'Restore' : 'Delete'"
+                            [severity]="row.deleted ? 'success' : 'danger'"
+                            icon="pi pi-trash"
+                            (click)="toggleRowVisibility(row)">
+                            </button>
+                        </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-card>
+        </div>
+    </div>
+
+    <!-- Payment Details Dialog -->
+    <p-dialog header="Enter Payment Details"
+            [(visible)]="paymentDialogVisible"
+            [modal]="true"
+            [closable]="false"
+            [style]="{width: '400px'}">
+
+    <div class="p-fluid">
+        <div class="p-field">
+        <label>Total Amount</label>
+        <input pInputText [value]="calculatedTotal" readonly />
+        </div>
+
+        <div class="p-field">
+        <label>Paid Amount</label>
+        <input pInputText type="number" [(ngModel)]="paidAmount" (input)="calculateRemaining()" />
+        </div>
+
+        <div class="p-field">
+        <label>Remaining Amount</label>
+        <input pInputText [value]="remainingAmount" readonly />
+        </div>
+
+        <div class="p-field">
+        <label>Due Date & Time</label>
+        <p-calendar [(ngModel)]="dueDateTime" [showTime]="true" hourFormat="24"></p-calendar>
+        </div>
+
+        <div class="p-field">
+            <label>Payment Mode</label>
+            <p-dropdown
+                [(ngModel)]="paymentMode"
+                [options]="paymentModes"
+                placeholder="Select Payment Mode"
+                optionLabel="label"
+                optionValue="value"
+                [showClear]="true"
+                [autoZIndex]="true"
+                [scrollHeight]="'200px'"
+                appendTo="body"
+            ></p-dropdown>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancel" class="p-button-text" (click)="paymentDialogVisible = false"></button>
+        <button pButton label="Confirm Order"
+                [disabled]="paidAmount == null || paidAmount < 0 || (remainingAmount > 0 && !dueDateTime) || !paymentMode"
+                (click)="saveVoiceOrder()" class="p-button-success"></button>
     </ng-template>
-    <ng-template #body let-row let-editing="editing" let-i="rowIndex">
-        <tr [ngClass]="{ 'deleted-row': row.deleted }">
-            <!-- Name Column -->
-            <td [pEditableColumn]="row.name" pEditableColumnField="name" *ngIf="!row.deleted">
-                <p-cellEditor #cellEditor>
-                    <ng-template pTemplate="input">
-                        <app-speech-editor-cell [(model)]="row.name" [row]="row" [table]="table" ></app-speech-editor-cell>
-                    </ng-template>
-                    <ng-template pTemplate="output">
-                    {{ row.name }}
-                    </ng-template>
-                </p-cellEditor>
-            </td>
-            <td *ngIf="row.deleted">
-                {{ row.name }}
-            </td>
-            <!-- Quantity Column -->
-            <td [pEditableColumn]="row.quantity" pEditableColumnField="quantity" *ngIf="!row.deleted">
-                <p-cellEditor>
-                    <ng-template #input>
-                        <input
-                            pInputText
-                            type="text"
-                            [(ngModel)]="row.quantity"
-                            required />
-                    </ng-template>
-                    <ng-template #output>
-                        {{ row.quantity }}
-                    </ng-template>
-                </p-cellEditor>
-            </td>
-            <td *ngIf="row.deleted">
-                {{ row.quantity }}
-            </td>
-            <!-- Unit Column -->
-            <td [pEditableColumn]="row.unit" pEditableColumnField="unit" *ngIf="!row.deleted">
-                <p-cellEditor>
-                    <ng-template pTemplate="input">
-                        <p-autoComplete
-                            [(ngModel)]="row.unit"
-                            [suggestions]="filteredUnits"
-                            (completeMethod)="filterUnits($event)"
-                            [field]="'label'"
-                            [dropdown]="true"
-                            appendTo="body"
-                            scrollHeight="200px"
-                            placeholder="Select Unit"
-                            class="w-full"
-                        ></p-autoComplete>
-                    </ng-template>
-
-                    <ng-template pTemplate="output">
-                        {{ row.unit || 'Select Unit' }}
-                    </ng-template>
-                </p-cellEditor>
-
-            </td>
-            <td *ngIf="row.deleted">
-                {{ row.unit }}
-            </td>
-            <!-- Price Column -->
-            <td [pEditableColumn]="row.price" pEditableColumnField="price" *ngIf="!row.deleted">
-                <p-cellEditor>
-                    <ng-template #input>
-                        <input
-                            pInputText
-                            [(ngModel)]="row.price" />
-                    </ng-template>
-                    <ng-template #output>
-                        <span *ngIf="row.price">
-                            {{ row.price * row.quantity }}({{ row.price }} * {{ row.quantity }})
-                        </span>
-                        <span *ngIf="!row.price">
-                            XX
-                        </span>
-                    </ng-template>
-                </p-cellEditor>
-            </td>
-            <td *ngIf="row.deleted">
-                {{ row.price }}
-            </td>
-            <!-- Audio Column -->
-            <td></td>
-            <!-- Action Column -->
-            <td>
-                <button pButton type="button" [label]="row.deleted ? 'Restore' : 'Delete'" [severity]="row.deleted ? 'success' : 'danger'" icon="pi pi-trash" (click)="toggleRowVisibility(row)"></button>
-            </td>
-        </tr>
-    </ng-template>
-</p-table>
-<div *ngIf="validOrder.length > 0">
-    <h2>Preview Order Slip</h2>
-    <app-print-slip [items]="validOrder"></app-print-slip>
+    </p-dialog>
 </div>

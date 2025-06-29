@@ -1,4 +1,5 @@
-<div id="slip">
+<!-- Customer Slip -->
+<div id="slip-customer" *ngIf="!workerVersion">
   <div class="header">
     <h3>Smart Kirana</h3>
     <h4>Tularam Kirana Store</h4>
@@ -9,17 +10,51 @@
 
   <table>
     <tbody>
-      <tr *ngFor="let item of items">
-        <td>{{ item.name }}</td>
-        <td style="text-align: right">{{ item.quantity }} {{ item.unit }}</td>
-        <td style="text-align: right">{{ item.price | number:'1.0-2' }}*{{item.quantity}}</td>
+      <tr *ngFor="let item of items" style="border-bottom: 1px dashed #ccc;">
+        <td>{{ language === 'hi' ? item.canonical : item.english }}</td>
+        <td style="text-align: right">
+          {{ item.quantity }} {{ language === 'hi' ? item.unit : item.unit }}
+        </td>
+        <td style="text-align: right">₹{{ item.price | number:'1.0-2' }}*{{ item.quantity }}</td>
       </tr>
     </tbody>
   </table>
 
   <div class="total" style="margin-top: 8px; text-align: right;">
-    Total: ₹{{ total | number:'1.0-2' }}
+    {{ language === 'hi' ? 'कुल' : 'Total' }}: ₹{{ total | number:'1.0-2' }}
+  </div>
+
+  <div class="payment-summary">
+    <p><strong>{{ language === 'hi' ? 'भुगतान' : 'Paid' }}:</strong> ₹{{ paidAmount }}</p>
+    <p><strong>{{ language === 'hi' ? 'बाकी' : 'Remaining' }}:</strong> ₹{{ remainingAmount }}</p>
+    <p><strong>{{ language === 'hi' ? 'भुगतान माध्यम' : 'Payment Mode' }}:</strong>
+      {{ paymentMode | titlecase }}
+    </p>
   </div>
 </div>
+<button *ngIf="!workerVersion" (click)="printSlip('slip-customer')">🖨️ Print Customer Slip</button>
 
-<button (click)="printSlip()">🖨️ Print</button>
+
+<!-- Worker Slip -->
+<div id="slip-worker" *ngIf="workerVersion" style="margin-top: 20px;">
+  <div class="header">
+    <h3>Smart Kirana</h3>
+    <h4>Tularam Kirana Store</h4>
+    <div>{{ now }}</div>
+    <div>Gurshaiganj</div>
+    <hr />
+  </div>
+
+  <table>
+    <tbody>
+      <tr *ngFor="let item of items" style="border-bottom: 1px dashed #ccc;">
+        <td>{{ language === 'hi' ? item.canonical : item.english }}</td>
+        <td style="text-align: right">
+          {{ item.quantity }} {{ language === 'hi' ? item.unit : item.unit }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<button *ngIf="workerVersion" (click)="printSlip('slip-worker')">🖨️ Print Worker Slip</button>
+

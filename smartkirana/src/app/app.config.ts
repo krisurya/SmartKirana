@@ -24,6 +24,9 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CustomersComponent } from './components/customers/customers.component';
 import { SmartKiranaLayoutComponent } from './components/smart-kirana-layout/smart-kirana-layout.component';
 import { SpeechEditorCellComponent } from './components/speech-editor-cell/speech-editor-cell.component';
+import { CustomerAutocompleteComponent } from './components/app-customer-autocomplete/app-customer-autocomplete.component';
+import { GlobalLoaderComponent } from './components/global-loader/global-loader.component';
+import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -36,6 +39,8 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({ theme: { preset: Aura } }),
     importProvidersFrom(ReactiveFormsModule),
 
+    // Services
+    MessageService,
 
     // ✅ Your services
     SpeechService,
@@ -45,6 +50,8 @@ export const appConfig: ApplicationConfig = {
     SpeechRecorderComponent,
     SpeechEditorCellComponent,
     PrintSlipComponent,
+    CustomerAutocompleteComponent,
+    GlobalLoaderComponent,
     FirestoreService,
     UnitMappingService,
 

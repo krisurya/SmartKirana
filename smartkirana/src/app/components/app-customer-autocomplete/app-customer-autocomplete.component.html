@@ -1,0 +1,49 @@
+<p-autoComplete
+  [(ngModel)]="selectedCustomer"
+  [suggestions]="filteredCustomers"
+  (completeMethod)="onSearch($event)"
+  (onDropdown)="showAllCustomers()"
+  field="display"
+  [forceSelection]="true"
+  [dropdown]="true"
+  (onSelect)="onCustomerSelect($event)"
+  placeholder="Search customer by name, phone, address"
+>
+  <ng-template let-customer pTemplate="item">
+    <div>
+      <strong>{{ customer.name }}</strong> - {{ customer.phone }}
+    </div>
+  </ng-template>
+</p-autoComplete>
+
+
+<button pButton icon="pi pi-plus" (click)="showAddDialog()" class="p-button-rounded p-button-outlined ml-2"></button>
+
+<p-dialog header="Add New Customer" [(visible)]="addDialogVisible" modal [closable]="false">
+  <form [formGroup]="form" class="p-fluid">
+    <div class="p-field">
+      <label for="name">Name</label>
+      <input pInputText formControlName="name" />
+      <small *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="p-error">Required</small>
+    </div>
+
+    <div class="p-field">
+      <label for="phone">Phone</label>
+      <input pInputText formControlName="phone" (blur)="onPhoneBlur()" />
+      <small *ngIf="form.get('phone')?.invalid && form.get('phone')?.touched" class="p-error">
+        Valid phone required
+      </small>
+    </div>
+
+    <div class="p-field">
+      <label for="address">Address</label>
+      <input pInputText formControlName="address" />
+      <small *ngIf="form.get('address')?.invalid && form.get('address')?.touched" class="p-error">Required</small>
+    </div>
+
+    <div class="p-dialog-footer">
+      <button pButton type="button" label="Cancel" (click)="updateDialogVisibility(false)" class="p-button-secondary"></button>
+      <button pButton type="button" label="Add" (click)="addCustomer()" [disabled]="form.invalid"></button>
+    </div>
+  </form>
+</p-dialog>
