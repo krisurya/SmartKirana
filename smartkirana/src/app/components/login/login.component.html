@@ -1,0 +1,48 @@
+<div class="login-wrapper">
+  <p-card class="login-card">
+    <div class="login-header">
+      <h2>🔐 Smart Kirana Login</h2>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+      <div class="form-field" [ngClass]="{ 'invalid': loginForm.get('email')?.invalid && loginForm.get('email')?.touched }">
+        <label>Email</label>
+        <input pInputText type="email" formControlName="email" placeholder="Enter your email" />
+        <small *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Valid email is required.
+        </small>
+      </div>
+
+      <div class="form-field" [ngClass]="{ 'invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched }">
+        <label>Password</label>
+        <input pInputText type="password" formControlName="password" placeholder="Enter your password" />
+        <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Password is required.
+        </small>
+      </div>
+
+      <div *ngIf="error" class="error-message">{{ error }}</div>
+
+      <div class="options">
+        <div class="remember-me">
+            <p-checkbox
+                [(ngModel)]="rememberMe"
+                binary="true"
+                label="Remember me"
+                inputId="rememberMe"
+            ></p-checkbox>
+            Remember Me
+        </div><br /><br />
+        <div class="links">
+            <a (click)="forgotPassword()">Forgot Password?</a> |
+            <a (click)="forgotUsername()">Forgot Username?</a>
+        </div>
+      </div>
+
+      <button pButton type="submit" label="Login" class="p-button-success w-full p-mt-2"></button>
+
+      <!-- <button pButton type="button" label="Login with Google" icon="pi pi-google"
+              class="p-button-secondary w-full p-mt-2" (click)="loginWithGoogle()"></button> -->
+    </form>
+  </p-card>
+</div>

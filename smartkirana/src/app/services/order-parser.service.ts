@@ -7,7 +7,7 @@ import { OrderResponse } from '../models/api-response';
   providedIn: 'root'
 })
 export class OrderParserService {
-  private apiUrl = 'http://localhost:8000/parse-order'; // ✅ Correct endpoint
+  private apiUrl = 'https://smartkirana.onrender.com/parse-order'; // ✅ Correct endpoint
 
   constructor(private http: HttpClient) {}
 

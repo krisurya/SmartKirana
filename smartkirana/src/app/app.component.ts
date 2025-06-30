@@ -18,7 +18,8 @@ export class AppComponent {
   constructor(
     private unitMappingService: UnitMappingService, 
     private uploadService: DataUploadService
-  ) {}
+  ) {
+  }
 
   async ngOnInit() {
     await this.unitMappingService.loadMappings();

@@ -1,17 +1,49 @@
-<div class="layout">
+<div class="layout-container" [class.collapsed]="sidebarCollapsed" [class.mobile]="screenWidth < 768">
   <!-- Sidebar -->
-  <aside class="sidebar">
-    <h2 class="sidebar-title">Smart Kirana</h2>
-    <p-panelMenu [model]="menuItems"></p-panelMenu>
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-header">
+      <h2>🛒</h2>
+    </div>
+
+    <ng-container *ngIf="!sidebarCollapsed || screenWidth < 768">
+      <p-panelMenu [model]="menuItems" [style]="{ width: '100%' }"></p-panelMenu>
+    </ng-container>
+
+    <ng-container *ngIf="sidebarCollapsed && screenWidth >= 768">
+      <ul class="collapsed-menu">
+        <li *ngFor="let item of menuItems">
+          <button pButton icon="{{ item.icon }}" (click)="navigate(item.routerLink)"></button>
+        </li>
+      </ul>
+    </ng-container>
   </aside>
 
-  <!-- Main Area -->
-  <main class="content">
-    <header class="topbar">
-      <h3>Smart Kirana</h3>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="header">
+      <div class="left-section">
+        <button pButton icon="pi pi-bars" class="menu-btn" (click)="toggleSidebar()" label=" "></button>
+        <h3>Smart Kirana</h3>
+      </div>
+
+      <p-splitButton
+        class="user-dropdown"
+        icon="pi pi-user"
+        [label]="(user$ | async)?.email || 'User'"
+        [model]="userMenu"
+        styleClass="p-button-sm p-button-text"
+      ></p-splitButton>
     </header>
-    <section class="main-content">
+
+    <!-- Routed Content -->
+    <main class="content">
       <router-outlet></router-outlet>
-    </section>
-  </main>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>&copy; 2025 Smart Kirana</span>
+    </footer>
+  </div>
 </div>
